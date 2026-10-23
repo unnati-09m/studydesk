@@ -33,8 +33,48 @@ function App() {
   const [notes, setNotes] = useState("");
   const [seconds, setSeconds] = useState(25 * 60);
   const [isRunning, setIsRunning] = useState(false);
+  const [dataLoaded, setDataLoaded] = useState(false);
 
   const completedCount = tasks.filter((task) => task.completed).length;
+
+  useEffect(() => {
+  async function loadSavedData() {
+    try {
+      const savedData = await window.studyDesk.loadData();
+
+      if (savedData) {
+        setTasks(
+          Array.isArray(savedData.tasks)
+            ? savedData.tasks
+            : initialTasks
+        );
+
+        setNotes(
+          typeof savedData.notes === "string"
+            ? savedData.notes
+            : ""
+        );
+      }
+    } catch (error) {
+      console.error("Could not load saved data:", error);
+    } finally {
+      setDataLoaded(true);
+    }
+  }
+
+  loadSavedData();
+}, []);
+
+useEffect(() => {
+  if (!dataLoaded) return;
+
+  window.studyDesk.saveData({
+    tasks,
+    notes,
+  }).catch((error) => {
+    console.error("Could not save data:", error);
+  });
+}, [tasks, notes, dataLoaded]);
 
   useEffect(() => {
     if (!isRunning) return;
