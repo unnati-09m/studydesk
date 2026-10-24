@@ -1285,3 +1285,341 @@
   outline: 2px solid #668b68;
   outline-offset: 3px;
 }
+
+
+/* StudyDesk — monochrome black & grey theme */
+
+:root {
+  color: #222222;
+  background: #ffffff;
+}
+
+.app-shell {
+  color: #222222;
+}
+
+/* Brand and navigation */
+.brand {
+  color: #222222;
+}
+
+.brand-mark {
+  background: #222222;
+  color: #ffffff;
+}
+
+.nav-link {
+  color: #555555;
+}
+
+.nav-link:hover,
+.nav-link.active {
+  background: #eeeeee;
+  color: #171717;
+}
+
+/* Neutral headings and labels */
+.eyebrow,
+.feature-number {
+  color: #777777;
+}
+
+.hero h1,
+.feature-copy h3,
+.feature-heading h2 {
+  color: #222222;
+}
+
+/* Black primary buttons */
+.hero-button,
+.primary-button {
+  background: #222222;
+  color: #ffffff;
+}
+
+.hero-button:hover,
+.primary-button:hover {
+  background: #444444;
+}
+
+/* Neutral feature cards */
+.tasks-card,
+.timer-card,
+.notes-card {
+  background: #f5f5f5;
+  border-color: #e8e8e8;
+  color: #222222;
+}
+
+.feature-card {
+  border-color: #e7e7e7;
+  box-shadow: 0 5px 22px rgba(0, 0, 0, 0.035);
+}
+
+.feature-card:hover {
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.075);
+}
+
+/* Task completion */
+.task-row.is-completed {
+  background: #f2f2f2;
+  border-color: #e3e3e3;
+}
+
+.task-row.is-completed .task-title {
+  color: #777777;
+  text-decoration: line-through;
+  text-decoration-color: #aaaaaa;
+}
+
+.task-check.checked {
+  background: #333333;
+  border-color: #333333;
+  color: #ffffff;
+}
+
+.task-delete {
+  color: #777777;
+}
+
+.task-delete:hover {
+  background: #eeeeee;
+  color: #222222;
+}
+
+/* Timer and mini preview accents */
+.preview-progress > div {
+  background: #555555;
+}
+
+.preview-check.completed {
+  background: #444444;
+  border-color: #444444;
+}
+
+.preview-start {
+  background: #222222;
+  color: #ffffff;
+}
+
+.preview-saved {
+  color: #666666;
+}
+
+/* Keyboard focus */
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible {
+  outline-color: rgba(60, 60, 60, 0.35);
+}
+
+/* Clean grey timer input */
+.duration-input {
+  border-color: #dddddd;
+  color: #222222;
+}
+
+.duration-input:focus {
+  border-color: #777777;
+}
+
+
+.duration-controls {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  width: 100%;
+  margin: 16px 0;
+}
+
+.time-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  color: #666666;
+  font-size: 0.82rem;
+}
+
+.duration-input {
+  width: 100%;
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid #dddddd;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #222222;
+}
+
+.duration-input:focus {
+  border-color: #555555;
+  outline: 2px solid #eeeeee;
+}
+
+.timer-display {
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.04em;
+}
+
+@media (max-width: 480px) {
+  .duration-controls {
+    gap: 8px;
+  }
+
+  .duration-input {
+    padding: 10px 6px;
+  }
+}
+
+
+/* Separate Electron timer window */
+.timer-window-shell {
+  width: 100%;
+  max-width: none;
+  min-height: 100vh;
+  margin: 0;
+  padding: 24px;
+  box-sizing: border-box;
+}
+
+.timer-window-topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.timer-window-page {
+  width: 100%;
+  max-width: 760px;
+  margin: 0 auto;
+}
+
+.timer-window-panel {
+  width: 100%;
+}
+
+
+/* Timer window controls */
+.timer-window-window-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.timer-window-shell {
+  min-height: 100vh;
+  box-sizing: border-box;
+}
+
+.timer-window-page {
+  width: 100%;
+  max-width: 760px;
+  margin: 0 auto;
+}
+
+/* Minimal display while timer is running */
+.timer-running-minimal .timer-window-page {
+  max-width: none;
+  min-height: calc(100vh - 48px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.timer-running-minimal .timer-window-panel {
+  width: 100%;
+  min-height: calc(100vh - 48px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  padding: 0;
+  border: none;
+  box-shadow: none;
+  background: transparent;
+}
+
+.timer-running-minimal .timer-display {
+  margin: 0;
+  font-size: clamp(4rem, 18vw, 14rem);
+  line-height: 1;
+  font-weight: 400;
+  letter-spacing: -0.06em;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Hide the top controls while running; hover near the top to reveal */
+.timer-running-minimal .timer-window-topbar {
+  position: fixed;
+  top: 16px;
+  left: 24px;
+  right: 24px;
+  z-index: 20;
+  opacity: 0;
+  pointer-events: auto;
+  transition: opacity 180ms ease;
+}
+
+.timer-running-minimal .timer-window-topbar:hover,
+.timer-running-minimal .timer-window-topbar:focus-within {
+  opacity: 1;
+}
+
+/* Pause and Reset appear when hovering near the bottom */
+.timer-running-minimal .timer-window-timer-actions {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  z-index: 20;
+  transform: translateX(-50%);
+  opacity: 0;
+  pointer-events: auto;
+  transition: opacity 180ms ease;
+}
+
+.timer-running-minimal .timer-window-timer-actions:hover,
+.timer-running-minimal .timer-window-timer-actions:focus-within {
+  opacity: 1;
+}
+
+/* Fix: keep timer controls visible and clickable */
+.timer-window-timer-actions,
+.timer-running-minimal .timer-window-timer-actions {
+  position: static !important;
+  left: auto !important;
+  bottom: auto !important;
+  transform: none !important;
+  opacity: 1 !important;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 28px;
+  pointer-events: auto;
+}
+
+/* Keep fullscreen and exit controls accessible */
+.timer-running-minimal .timer-window-topbar {
+  position: relative !important;
+  inset: auto !important;
+  opacity: 1 !important;
+  pointer-events: auto;
+}
+
+/* Keep the timer centered */
+.timer-running-minimal .timer-window-shell {
+  min-height: 100vh;
+}
+
+.timer-running-minimal .timer-window-page,
+.timer-running-minimal .timer-window-panel {
+  min-height: calc(100vh - 100px);
+}
+
+/* Make the number prominent */
+.timer-running-minimal .timer-display {
+  font-size: clamp(3.5rem, 15vw, 12rem);
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}

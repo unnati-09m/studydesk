@@ -26,14 +26,17 @@ const initialTasks = [
   },
 ];
 
-function App() {
+function StudyDeskApp() {
+  // Current page
   const [page, setPage] = useState("Overview");
+
+  // Tasks and notes
   const [tasks, setTasks] = useState(initialTasks);
   const [newTask, setNewTask] = useState("");
   const [notes, setNotes] = useState("");
-  const [seconds, setSeconds] = useState(25 * 60);
-  const [duration, setDuration] = useState(25);
-  const [isRunning, setIsRunning] = useState(false);
+
+
+  // Electron data-saving status
   const [dataLoaded, setDataLoaded] = useState(false);
   const [saveStatus, setSaveStatus] = useState("All changes saved");
 
@@ -41,10 +44,14 @@ function App() {
     (task) => task.completed
   ).length;
 
-  // Load tasks and notes from the local JSON file.
+  // Load saved tasks and notes from Electron.
   useEffect(() => {
     async function loadSavedData() {
       try {
+        if (!window.studyDesk) {
+          return;
+        }
+
         const savedData = await window.studyDesk.loadData();
 
         if (savedData) {
@@ -70,6 +77,11 @@ function App() {
   useEffect(() => {
     if (!dataLoaded) return;
 
+    if (!window.studyDesk) {
+      setSaveStatus("Desktop storage unavailable");
+      return;
+    }
+
     setSaveStatus("Saving changes...");
 
     const saveTimer = window.setTimeout(async () => {
@@ -85,33 +97,19 @@ function App() {
     return () => window.clearTimeout(saveTimer);
   }, [tasks, notes, dataLoaded]);
 
-  // Focus timer countdown.
-  useEffect(() => {
-    if (!isRunning) return;
 
-    const timer = window.setInterval(() => {
-      setSeconds((current) => {
-        if (current <= 1) {
-          window.clearInterval(timer);
-          setIsRunning(false);
-          return 0;
-        }
-
-        return current - 1;
-      });
-    }, 1000);
-
-    return () => window.clearInterval(timer);
-  }, [isRunning]);
-
+  // Navigate between pages.
   function openPage(selectedPage) {
     setPage(selectedPage);
+    window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
+  // Add a new task.
   function addTask(event) {
     event.preventDefault();
 
     const title = newTask.trim();
+
     if (!title) return;
 
     const task = {
@@ -126,6 +124,7 @@ function App() {
     setNewTask("");
   }
 
+  // Mark a task as completed or incomplete.
   function toggleTask(id) {
     setTasks((currentTasks) =>
       currentTasks.map((task) =>
@@ -136,35 +135,13 @@ function App() {
     );
   }
 
+  // Delete a task.
   function deleteTask(id) {
     setTasks((currentTasks) =>
       currentTasks.filter((task) => task.id !== id)
     );
   }
 
-  function changeDuration(event) {
-    const minutes = Number(event.target.value);
-
-    if (minutes >= 1 && minutes <= 600) {
-      setDuration(minutes);
-      setIsRunning(false);
-      setSeconds(minutes * 60);
-    }
-  }
-
-  function resetTimer() {
-    setIsRunning(false);
-    setSeconds(duration * 60);
-  }
-
-  function formatTime(totalSeconds) {
-    const minutes = Math.floor(totalSeconds / 60);
-    const remainingSeconds = totalSeconds % 60;
-
-    return `${String(minutes).padStart(2, "0")}:${String(
-      remainingSeconds
-    ).padStart(2, "0")}`;
-  }
 
   return (
     <main className="app-shell">
@@ -195,7 +172,7 @@ function App() {
         </nav>
       </header>
 
-      {/* Home page */}
+      {/* Overview page */}
       {page === "Overview" && (
         <>
           <section className="hero">
@@ -223,20 +200,18 @@ function App() {
 
           {/* Feature sections */}
           <section className="feature-section">
-            
-<div className="feature-heading">
-  <p className="eyebrow">EXPLORE YOUR WORKSPACE</p>
+            <div className="feature-heading">
+              <p className="eyebrow">EXPLORE YOUR WORKSPACE</p>
 
-  <h2>Everything you need, in one quiet place.</h2>
+              <h2>Everything you need, in one quiet place.</h2>
 
-  <p className="section-description">
-    A little more clarity for your everyday study routine.
-  </p>
-</div>
-
+              <p className="section-description">
+                A little more clarity for your everyday study routine.
+              </p>
+            </div>
 
             <div className="feature-list">
-              {/* Tasks: text left, image right */}
+              {/* Tasks preview */}
               <button
                 className="feature-row tasks-row"
                 onClick={() => openPage("My tasks")}
@@ -256,36 +231,40 @@ function App() {
                   </span>
                 </div>
 
+                <div className="feature-visual tasks-visual">
+                  <div className="preview-header">
+                    <span>MY TASKS</span>
+                    <span>02 / 03</span>
+                  </div>
 
-<div className="feature-visual tasks-visual">
-  <div className="preview-header">
-    <span>MY TASKS</span>
-    <span>02 / 03</span>
-  </div>
+                  <div className="preview-progress">
+                    <div />
+                  </div>
 
-  <div className="preview-progress">
-    <div />
-  </div>
+                  <div className="preview-task">
+                    <span className="preview-check completed">✓</span>
+                    <span className="preview-task-text">
+                      Review lecture notes
+                    </span>
+                  </div>
 
-  <div className="preview-task">
-    <span className="preview-check completed">✓</span>
-    <span className="preview-task-text">Review lecture notes</span>
-  </div>
+                  <div className="preview-task">
+                    <span className="preview-check" />
+                    <span className="preview-task-text">
+                      Complete assignment
+                    </span>
+                  </div>
 
-  <div className="preview-task">
-    <span className="preview-check" />
-    <span className="preview-task-text">Complete assignment</span>
-  </div>
-
-  <div className="preview-task">
-    <span className="preview-check" />
-    <span className="preview-task-text">Prepare for quiz</span>
-  </div>
-</div>
-
+                  <div className="preview-task">
+                    <span className="preview-check" />
+                    <span className="preview-task-text">
+                      Prepare for quiz
+                    </span>
+                  </div>
+                </div>
               </button>
 
-              {/* Timer: image left, text right */}
+              {/* Timer preview */}
               <button
                 className="feature-row timer-row"
                 onClick={() => openPage("Focus timer")}
@@ -305,23 +284,25 @@ function App() {
                   </span>
                 </div>
 
+                <div className="feature-visual timer-visual">
+                  <span className="preview-label">FOCUS SESSION</span>
 
-<div className="feature-visual timer-visual">
-  <span className="preview-label">FOCUS SESSION</span>
+                  <div className="preview-timer">25:00</div>
 
-  <div className="preview-timer">25:00</div>
+                  <span className="preview-subtitle">
+                    Ready when you are.
+                  </span>
 
-  <span className="preview-subtitle">Ready when you are.</span>
-
-  <div className="preview-timer-actions">
-    <span className="preview-start">▶ &nbsp; Start focus</span>
-    <span className="preview-reset">↺</span>
-  </div>
-</div>
-
+                  <div className="preview-timer-actions">
+                    <span className="preview-start">
+                      ▶ &nbsp; Start focus
+                    </span>
+                    <span className="preview-reset">↺</span>
+                  </div>
+                </div>
               </button>
 
-              {/* Notes: text left, image right */}
+              {/* Notes preview */}
               <button
                 className="feature-row notes-row"
                 onClick={() => openPage("Quick notes")}
@@ -341,43 +322,47 @@ function App() {
                   </span>
                 </div>
 
-               
-<div className="feature-visual notes-visual">
-  <div className="preview-header">
-    <span>QUICK NOTES</span>
-    <span className="preview-saved">Saved</span>
-  </div>
+                <div className="feature-visual notes-visual">
+                  <div className="preview-header">
+                    <span>QUICK NOTES</span>
+                    <span className="preview-saved">Saved</span>
+                  </div>
 
-  <div className="preview-note-title">Lecture notes</div>
+                  <div className="preview-note-title">
+                    Lecture notes
+                  </div>
 
-  <div className="preview-note-line long" />
-  <div className="preview-note-line medium" />
-  <div className="preview-note-line long" />
-  <div className="preview-note-line short" />
+                  <div className="preview-note-line long" />
+                  <div className="preview-note-line medium" />
+                  <div className="preview-note-line long" />
+                  <div className="preview-note-line short" />
 
-  <span className="preview-note-footer">A thought worth keeping.</span>
-</div>
-
+                  <span className="preview-note-footer">
+                    A thought worth keeping.
+                  </span>
+                </div>
               </button>
             </div>
           </section>
 
-          {/* Quote at the end of the home page */}
+          {/* Decorative connector */}
+          <section
+            className="connector-section"
+            aria-hidden="true"
+          >
+            <div className="connector-line">
+              <span className="connector-dot green" />
+              <span className="connector-dot peach" />
+              <span className="connector-dot mauve" />
+              <span className="connector-dot blue" />
+            </div>
 
-{/* Decorative dotted connector section */}
-<section className="connector-section" aria-hidden="true">
-  <div className="connector-line">
-    <span className="connector-dot green" />
-    <span className="connector-dot peach" />
-    <span className="connector-dot mauve" />
-    <span className="connector-dot blue" />
-  </div>
+            <p className="connector-caption">
+              A little space to focus, create, and grow.
+            </p>
+          </section>
 
-  <p className="connector-caption">
-    A little space to focus, create, and grow.
-  </p>
-</section>
-
+          {/* Quote */}
           <section className="quote-section">
             <span className="quote-mark">“</span>
 
@@ -437,9 +422,10 @@ function App() {
                     {task.completed ? "✓" : ""}
                   </button>
 
-                 <div className="task-content">
-  <p className="task-title">{task.title}</p>
-</div>
+                  <div className="task-content">
+                    <p className="task-title">{task.title}</p>
+                  </div>
+
                   <button
                     className="task-delete"
                     onClick={() => deleteTask(task.id)}
@@ -477,70 +463,25 @@ function App() {
         <section className="inner-page">
           <div className="section-heading">
             <p className="eyebrow">MAKE TIME FOR WHAT MATTERS</p>
-
             <h2>Your time. Your pace.</h2>
-
             <p className="section-description">
-              Choose a duration and give one thing your full attention.
+              Open a dedicated timer window, set your duration, and focus.
             </p>
           </div>
 
           <section className="utility-panel focus-panel">
             <p className="eyebrow">YOUR FOCUS SESSION</p>
-
-            <label className="duration-label" htmlFor="duration">
-              Session length in minutes
-            </label>
-
-            <input
-              id="duration"
-              className="duration-input"
-              type="number"
-              min="1"
-              max="600"
-              value={duration}
-              disabled={isRunning}
-              onChange={changeDuration}
-            />
-
-            <p className="timer-display">{formatTime(seconds)}</p>
-
+            <h3>Focus timer window</h3>
             <p className="utility-description">
-              A little uninterrupted time can go a long way.
+              Your countdown will be managed by Electron and can run in its own
+              resizable, maximizable, full-screen window.
             </p>
-
-            <div className="timer-actions">
-              <button
-                className="primary-button"
-                onClick={() => {
-                  if (seconds === 0) {
-                    setSeconds(duration * 60);
-                    setIsRunning(true);
-                  } else {
-                    setIsRunning((running) => !running);
-                  }
-                }}
-              >
-                {isRunning
-                  ? "Pause session"
-                  : seconds === 0
-                    ? "Start again"
-                    : "Start focus"}
-              </button>
-
-              <button
-                className="secondary-button"
-                onClick={resetTimer}
-              >
-                Reset
-              </button>
-            </div>
-
-            {seconds === 0 && (
-              <p className="task-summary">
-                Your focus session is complete. Well done!
-              </p>
-            )}
+            <button
+              className="primary-button"
+              onClick={() => window.studyDesk?.openTimerWindow()}
+            >
+              Open timer window
+            </button>
           </section>
         </section>
       )}
@@ -574,14 +515,243 @@ function App() {
               rows={12}
             />
 
-            <p className="notes-hint">
-              {notes.length} characters
-            </p>
+            <p className="notes-hint">{notes.length} characters</p>
           </section>
         </section>
       )}
     </main>
   );
+}
+
+function TimerWindow() {
+  const [remainingSeconds, setRemainingSeconds] = useState(0);
+  const [isRunning, setIsRunning] = useState(false);
+  const [timerHours, setTimerHours] = useState("0");
+  const [timerMinutes, setTimerMinutes] = useState("0");
+  const [timerSeconds, setTimerSeconds] = useState("0");
+  const [isFullScreen, setIsFullScreen] = useState(false);
+  const [hasStarted, setHasStarted] = useState(false);
+
+  useEffect(() => {
+    let unsubscribeTimer;
+    let unsubscribeFullscreen;
+
+    async function syncTimer() {
+      try {
+        const state = await window.studyDesk?.getTimerState();
+        if (state) {
+          setRemainingSeconds(state.remainingSeconds ?? 0);
+          setIsRunning(Boolean(state.isRunning));
+        }
+      } catch (error) {
+        console.error("Could not read timer state:", error);
+      }
+    }
+
+    syncTimer();
+    unsubscribeTimer = window.studyDesk?.onTimerUpdate((state) => {
+      setRemainingSeconds(state.remainingSeconds ?? 0);
+      setIsRunning(Boolean(state.isRunning));
+    });
+    unsubscribeFullscreen = window.studyDesk?.onTimerFullscreenUpdate?.((state) => {
+      setIsFullScreen(Boolean(state.isFullScreen));
+    });
+
+    return () => {
+      if (typeof unsubscribeTimer === "function") unsubscribeTimer();
+      if (typeof unsubscribeFullscreen === "function") unsubscribeFullscreen();
+    };
+  }, []);
+
+  function getSelectedDuration() {
+    const hours = Number(timerHours);
+    const minutes = Number(timerMinutes);
+    const secs = Number(timerSeconds);
+
+    if (
+      timerHours.trim() === "" ||
+      timerMinutes.trim() === "" ||
+      timerSeconds.trim() === "" ||
+      !Number.isInteger(hours) ||
+      !Number.isInteger(minutes) ||
+      !Number.isInteger(secs) ||
+      hours < 0 || hours > 999 ||
+      minutes < 0 || minutes > 99999 ||
+      secs < 0 || secs > 59
+    ) {
+      return 0;
+    }
+
+    return hours * 3600 + minutes * 60 + secs;
+  }
+
+  function formatTime(totalSeconds) {
+    const safeSeconds = Math.max(0, totalSeconds);
+    const hours = Math.floor(safeSeconds / 3600);
+    const minutes = Math.floor((safeSeconds % 3600) / 60);
+    const secs = safeSeconds % 60;
+
+    return [hours, minutes, secs]
+      .map((part) => String(part).padStart(2, "0"))
+      .join(":");
+  }
+
+  async function applyDuration() {
+    const duration = getSelectedDuration();
+
+    if (duration < 1) {
+      window.alert("Enter a duration greater than 00:00:00 first.");
+      return;
+    }
+
+    const state = await window.studyDesk?.resetTimer(duration);
+
+    // A newly selected duration has not started yet.
+    setHasStarted(false);
+
+    if (state) {
+      setRemainingSeconds(state.remainingSeconds ?? duration);
+      setIsRunning(Boolean(state.isRunning));
+    } else {
+      setRemainingSeconds(duration);
+      setIsRunning(false);
+    }
+  }
+
+  async function startPauseTimer() {
+    if (isRunning) {
+      await window.studyDesk?.pauseTimer();
+      return;
+    }
+
+    // Start a fresh session after setting a duration, resetting, or opening a new timer window.
+    if (!hasStarted || remainingSeconds <= 0) {
+      const duration = getSelectedDuration();
+
+      if (duration < 1) {
+        window.alert("Set a duration greater than 00:00:00 before starting.");
+        return;
+      }
+
+      const state = await window.studyDesk?.startTimer(duration);
+      setHasStarted(true);
+
+      if (state) {
+        setRemainingSeconds(state.remainingSeconds ?? duration);
+        setIsRunning(Boolean(state.isRunning));
+      }
+      return;
+    }
+
+    // Resume only a session that was started and then paused.
+    const state = await window.studyDesk?.resumeTimer();
+    if (state) {
+      setRemainingSeconds(state.remainingSeconds ?? remainingSeconds);
+      setIsRunning(Boolean(state.isRunning));
+    }
+  }
+
+  async function resetTimer() {
+    const duration = getSelectedDuration();
+    const state = await window.studyDesk?.resetTimer(duration);
+
+    setHasStarted(false);
+
+    if (state) {
+      setRemainingSeconds(state.remainingSeconds ?? duration);
+      setIsRunning(Boolean(state.isRunning));
+    } else {
+      setRemainingSeconds(duration);
+      setIsRunning(false);
+    }
+  }
+
+  async function toggleFullscreen() {
+    // The actual state is updated by Electron's enter/leave-full-screen events.
+    // Do not set React state from the immediate IPC result: macOS may update it later.
+    await window.studyDesk?.toggleTimerFullscreen();
+  }
+
+  async function closeTimerWindow() {
+    try {
+      await window.studyDesk?.closeTimerWindow();
+    } catch (error) {
+      console.error("Could not close timer window:", error);
+    }
+  }
+
+  return (
+    <main className={`app-shell timer-window-shell ${isRunning ? "timer-running-minimal" : ""}`}>
+      <header className="topbar timer-window-topbar">
+        <span className="brand">StudyDesk</span>
+        <div className="timer-window-window-actions">
+          <button className="secondary-button" onClick={toggleFullscreen}>
+            {isFullScreen ? "Exit full screen" : "Full screen ⛶"}
+          </button>
+          <button className="secondary-button" onClick={closeTimerWindow}>
+            Exit window ×
+          </button>
+        </div>
+      </header>
+
+      <section className="inner-page timer-window-page">
+        <section className="utility-panel focus-panel timer-window-panel">
+          {!isRunning && (
+            <>
+              <p className="eyebrow">FOCUS TIMER</p>
+              <label className="duration-label">Set your session duration</label>
+
+              <div className="duration-controls">
+                <div className="time-field">
+                  <label htmlFor="timer-hours">Hours</label>
+                  <input id="timer-hours" className="duration-input" type="number"
+                    min="0" max="999" step="1" value={timerHours}
+                    onChange={(event) => setTimerHours(event.target.value)} />
+                </div>
+                <div className="time-field">
+                  <label htmlFor="timer-minutes">Minutes</label>
+                  <input id="timer-minutes" className="duration-input" type="number"
+                    min="0" max="99999" step="1" value={timerMinutes}
+                    onChange={(event) => setTimerMinutes(event.target.value)} />
+                </div>
+                <div className="time-field">
+                  <label htmlFor="timer-seconds">Seconds</label>
+                  <input id="timer-seconds" className="duration-input" type="number"
+                    min="0" max="59" step="1" value={timerSeconds}
+                    onChange={(event) => setTimerSeconds(event.target.value)} />
+                </div>
+              </div>
+
+              <button className="secondary-button" onClick={applyDuration}>
+                Set duration
+              </button>
+            </>
+          )}
+
+          <p className="timer-display">{formatTime(remainingSeconds)}</p>
+
+          <div className="timer-actions timer-window-timer-actions">
+            <button className="primary-button" onClick={startPauseTimer}>
+              {isRunning ? "Pause" : hasStarted && remainingSeconds > 0 ? "Resume" : "Start"}
+            </button>
+            <button className="secondary-button" onClick={resetTimer}>Reset</button>
+          </div>
+
+          {!isRunning && remainingSeconds === 0 && (
+            <p className="utility-description">Enter a duration to begin.</p>
+          )}
+          {!isRunning && remainingSeconds > 0 && (
+            <p className="utility-description">Ready when you are.</p>
+          )}
+        </section>
+      </section>
+    </main>
+  );
+}
+
+function App() {
+  const isTimerWindow = new URLSearchParams(window.location.search).get("window") === "timer";
+  return isTimerWindow ? <TimerWindow /> : <StudyDeskApp />;
 }
 
 export default App;
