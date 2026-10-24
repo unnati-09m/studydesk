@@ -256,10 +256,33 @@ function App() {
                   </span>
                 </div>
 
-                <div
-                  className="feature-visual tasks-visual"
-                  aria-label="Study tasks photograph"
-                />
+
+<div className="feature-visual tasks-visual">
+  <div className="preview-header">
+    <span>MY TASKS</span>
+    <span>02 / 03</span>
+  </div>
+
+  <div className="preview-progress">
+    <div />
+  </div>
+
+  <div className="preview-task">
+    <span className="preview-check completed">✓</span>
+    <span className="preview-task-text">Review lecture notes</span>
+  </div>
+
+  <div className="preview-task">
+    <span className="preview-check" />
+    <span className="preview-task-text">Complete assignment</span>
+  </div>
+
+  <div className="preview-task">
+    <span className="preview-check" />
+    <span className="preview-task-text">Prepare for quiz</span>
+  </div>
+</div>
+
               </button>
 
               {/* Timer: image left, text right */}
@@ -282,10 +305,20 @@ function App() {
                   </span>
                 </div>
 
-                <div
-                  className="feature-visual timer-visual"
-                  aria-label="Alarm clock photograph"
-                />
+
+<div className="feature-visual timer-visual">
+  <span className="preview-label">FOCUS SESSION</span>
+
+  <div className="preview-timer">25:00</div>
+
+  <span className="preview-subtitle">Ready when you are.</span>
+
+  <div className="preview-timer-actions">
+    <span className="preview-start">▶ &nbsp; Start focus</span>
+    <span className="preview-reset">↺</span>
+  </div>
+</div>
+
               </button>
 
               {/* Notes: text left, image right */}
@@ -308,10 +341,23 @@ function App() {
                   </span>
                 </div>
 
-                <div
-                  className="feature-visual notes-visual"
-                  aria-label="Notes and study materials photograph"
-                />
+               
+<div className="feature-visual notes-visual">
+  <div className="preview-header">
+    <span>QUICK NOTES</span>
+    <span className="preview-saved">Saved</span>
+  </div>
+
+  <div className="preview-note-title">Lecture notes</div>
+
+  <div className="preview-note-line long" />
+  <div className="preview-note-line medium" />
+  <div className="preview-note-line long" />
+  <div className="preview-note-line short" />
+
+  <span className="preview-note-footer">A thought worth keeping.</span>
+</div>
+
               </button>
             </div>
           </section>
@@ -391,14 +437,9 @@ function App() {
                     {task.completed ? "✓" : ""}
                   </button>
 
-                  <div className="task-content">
-                    <p className="task-title">{task.title}</p>
-
-                    <p className="task-meta">
-                      {task.subject} · {task.time}
-                    </p>
-                  </div>
-
+                 <div className="task-content">
+  <p className="task-title">{task.title}</p>
+</div>
                   <button
                     className="task-delete"
                     onClick={() => deleteTask(task.id)}
