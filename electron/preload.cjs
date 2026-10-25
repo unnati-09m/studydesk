@@ -20,6 +20,10 @@ contextBridge.exposeInMainWorld("studyDesk", {
 deleteNoteTxt: (noteId) =>
   ipcRenderer.invoke("delete-note-txt", noteId),
 
+  // Calendar events
+  loadCalendarEvents: () => ipcRenderer.invoke("load-calendar-events"),
+  saveCalendarEvents: (events) => ipcRenderer.invoke("save-calendar-events", events),
+
   onTimerUpdate: (callback) => {
     const listener = (_event, state) => callback(state);
     ipcRenderer.on("timer-update", listener);

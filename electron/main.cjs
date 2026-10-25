@@ -118,6 +118,35 @@ const folderPath = notesFolderPath();
   return { success: true };
 });
 
+// -------------------- Calendar events --------------------
+
+ipcMain.handle("load-calendar-events", async () => {
+  try {
+    const file = await fs.readFile(dataPath(), "utf-8");
+    const data = JSON.parse(file);
+    return Array.isArray(data.calendarEvents) ? data.calendarEvents : [];
+  } catch (error) {
+    if (error.code === "ENOENT") return [];
+    throw error;
+  }
+});
+
+ipcMain.handle("save-calendar-events", async (_event, events) => {
+  // Load the existing data so we don't overwrite tasks or notes.
+  let existing = {};
+  try {
+    const file = await fs.readFile(dataPath(), "utf-8");
+    existing = JSON.parse(file);
+  } catch {
+    // File doesn't exist yet — start fresh.
+  }
+
+  const updated = { ...existing, calendarEvents: events };
+  await fs.mkdir(app.getPath("userData"), { recursive: true });
+  await fs.writeFile(dataPath(), JSON.stringify(updated, null, 2), "utf-8");
+  return { success: true };
+});
+
 // -------------------- Electron-owned countdown --------------------
 
 function getRemainingSeconds() {

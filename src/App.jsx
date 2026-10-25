@@ -19,6 +19,17 @@ function StudyDeskApp() {
   const [dataLoaded, setDataLoaded] = useState(false);
   const [saveStatus, setSaveStatus] = useState("All changes saved");
 
+  // Calendar state
+  const [calendarEvents, setCalendarEvents] = useState([]);
+  const [calendarYear, setCalendarYear] = useState(new Date().getFullYear());
+  const [calendarMonth, setCalendarMonth] = useState(new Date().getMonth()); // 0-indexed
+  const [selectedDate, setSelectedDate] = useState(null); // "YYYY-MM-DD" string
+  const [showEventForm, setShowEventForm] = useState(false);
+  const [editingEvent, setEditingEvent] = useState(null); // null = new, object = editing
+  const [eventTitle, setEventTitle] = useState("");
+  const [eventNote, setEventNote] = useState("");
+  const [calendarSaveStatus, setCalendarSaveStatus] = useState("");
+
   const completedCount = tasks.filter(
     (task) => task.completed
   ).length;
@@ -243,6 +254,175 @@ function StudyDeskApp() {
     );
   }
 
+  // ---- Calendar helpers ----
+
+  // Load calendar events from Electron when the app starts.
+  useEffect(() => {
+    if (!window.studyDesk?.loadCalendarEvents) return;
+    window.studyDesk.loadCalendarEvents().then((events) => {
+      setCalendarEvents(events);
+    }).catch((error) => {
+      console.error("Could not load calendar events:", error);
+    });
+  }, []);
+
+  // Save all calendar events to disk.
+  async function saveCalendarEvents(updatedEvents) {
+    if (!window.studyDesk?.saveCalendarEvents) return;
+    try {
+      await window.studyDesk.saveCalendarEvents(updatedEvents);
+    } catch (error) {
+      console.error("Could not save calendar events:", error);
+    }
+  }
+
+  // Get the date string "YYYY-MM-DD" for any date.
+  function toDateString(year, month, day) {
+    const mm = String(month + 1).padStart(2, "0");
+    const dd = String(day).padStart(2, "0");
+    return `${year}-${mm}-${dd}`;
+  }
+
+  // Get events for a specific date string.
+  function eventsForDate(dateString) {
+    return calendarEvents.filter((ev) => ev.date === dateString);
+  }
+
+  // Navigate calendar months.
+  function prevMonth() {
+    if (calendarMonth === 0) {
+      setCalendarMonth(11);
+      setCalendarYear((y) => y - 1);
+    } else {
+      setCalendarMonth((m) => m - 1);
+    }
+    setSelectedDate(null);
+    setShowEventForm(false);
+  }
+
+  function nextMonth() {
+    if (calendarMonth === 11) {
+      setCalendarMonth(0);
+      setCalendarYear((y) => y + 1);
+    } else {
+      setCalendarMonth((m) => m + 1);
+    }
+    setSelectedDate(null);
+    setShowEventForm(false);
+  }
+
+  // Click a day on the calendar.
+  function selectDay(dateString) {
+    setSelectedDate(dateString);
+    setShowEventForm(false);
+    setEditingEvent(null);
+    setEventTitle("");
+    setEventNote("");
+  }
+
+  // Open the "add event" form for the selected date.
+  function openAddEventForm() {
+    setEditingEvent(null);
+    setEventTitle("");
+    setEventNote("");
+    setShowEventForm(true);
+  }
+
+  // Open the "edit event" form for an existing event.
+  function openEditEventForm(event) {
+    setEditingEvent(event);
+    setEventTitle(event.title);
+    setEventNote(event.note || "");
+    setShowEventForm(true);
+  }
+
+  // Save (add or update) an event.
+  async function saveEvent() {
+    const title = eventTitle.trim();
+    if (!title) {
+      setCalendarSaveStatus("Please enter an event title.");
+      return;
+    }
+    if (!selectedDate) return;
+
+    let updatedEvents;
+
+    if (editingEvent) {
+      // Update existing event.
+      updatedEvents = calendarEvents.map((ev) =>
+        ev.id === editingEvent.id
+          ? { ...ev, title, note: eventNote.trim() }
+          : ev
+      );
+    } else {
+      // Add new event.
+      const newEvent = {
+        id: Date.now(),
+        date: selectedDate,
+        title,
+        note: eventNote.trim(),
+      };
+      updatedEvents = [...calendarEvents, newEvent];
+    }
+
+    setCalendarEvents(updatedEvents);
+    await saveCalendarEvents(updatedEvents);
+    setShowEventForm(false);
+    setEditingEvent(null);
+    setEventTitle("");
+    setEventNote("");
+    setCalendarSaveStatus("Event saved!");
+    setTimeout(() => setCalendarSaveStatus(""), 2500);
+  }
+
+  // Delete an event.
+  async function deleteEvent(eventId) {
+    const updatedEvents = calendarEvents.filter((ev) => ev.id !== eventId);
+    setCalendarEvents(updatedEvents);
+    await saveCalendarEvents(updatedEvents);
+  }
+
+  // Build the grid of days for the current month.
+  function buildCalendarDays() {
+    const firstDay = new Date(calendarYear, calendarMonth, 1).getDay(); // 0=Sun
+    const daysInMonth = new Date(calendarYear, calendarMonth + 1, 0).getDate();
+    // Pad the start so day 1 falls on the correct weekday.
+    const cells = Array(firstDay).fill(null);
+    for (let d = 1; d <= daysInMonth; d++) {
+      cells.push(d);
+    }
+    return cells;
+  }
+
+  // Today's date string, for highlighting.
+  const todayString = toDateString(
+    new Date().getFullYear(),
+    new Date().getMonth(),
+    new Date().getDate()
+  );
+
+  const monthNames = [
+    "January", "February", "March", "April",
+    "May", "June", "July", "August",
+    "September", "October", "November", "December",
+  ];
+
+  // Upcoming events: next 7 days from today.
+  function getUpcomingEvents() {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const in7Days = new Date(today);
+    in7Days.setDate(today.getDate() + 7);
+
+    return calendarEvents
+      .filter((ev) => {
+        const evDate = new Date(ev.date + "T00:00:00");
+        return evDate >= today && evDate <= in7Days;
+      })
+      .sort((a, b) => a.date.localeCompare(b.date))
+      .slice(0, 5);
+  }
+
 
   return (
     <main className="app-shell">
@@ -257,7 +437,7 @@ function StudyDeskApp() {
         </button>
 
         <nav className="navigation" aria-label="Main navigation">
-          {["Overview", "My tasks", "Focus timer", "Quick notes"].map(
+          {["Overview", "My tasks", "Focus timer", "Quick notes", "Calendar"].map(
             (item) => (
               <button
                 key={item}
@@ -462,6 +642,47 @@ function StudyDeskApp() {
               A little space to focus, create, and grow.
             </p>
           </section>
+
+          {/* Upcoming events from calendar — only show if events exist in next 7 days */}
+          {getUpcomingEvents().length > 0 && (
+            <section className="upcoming-section">
+              <div className="upcoming-heading">
+                <p className="eyebrow">COMING UP</p>
+                <h2>Upcoming this week.</h2>
+              </div>
+
+              <div className="upcoming-list">
+                {getUpcomingEvents().map((ev) => (
+                  <div key={ev.id} className="upcoming-event-row">
+                    <div className="upcoming-date-badge">
+                      <span className="upcoming-day">
+                        {new Date(ev.date + "T00:00:00").toLocaleDateString("en-IN", { day: "numeric" })}
+                      </span>
+                      <span className="upcoming-month">
+                        {new Date(ev.date + "T00:00:00").toLocaleDateString("en-IN", { month: "short" })}
+                      </span>
+                    </div>
+                    <div className="upcoming-event-info">
+                      <p className="upcoming-event-title">{ev.title}</p>
+                      {ev.note && <p className="upcoming-event-note">{ev.note}</p>}
+                    </div>
+                    <button
+                      className="upcoming-view-btn"
+                      onClick={() => {
+                        const evDate = new Date(ev.date + "T00:00:00");
+                        setCalendarMonth(evDate.getMonth());
+                        setCalendarYear(evDate.getFullYear());
+                        setSelectedDate(ev.date);
+                        openPage("Calendar");
+                      }}
+                    >
+                      View →
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
 
           {/* Quote */}
           <section className="quote-section">
@@ -707,6 +928,167 @@ function StudyDeskApp() {
 </div>
 
             </section>
+          </section>
+        </section>
+      )}
+
+      {/* Study Calendar page */}
+      {page === "Calendar" && (
+        <section className="inner-page">
+          <div className="section-heading">
+            <p className="eyebrow">PLAN YOUR MONTH</p>
+            <h2>Study calendar.</h2>
+            <p className="section-description">
+              Click any date to add a study event or deadline.
+            </p>
+          </div>
+
+          <section className="calendar-layout">
+            {/* Left: calendar grid */}
+            <div className="calendar-panel">
+              <div className="calendar-nav">
+                <button className="cal-nav-btn" onClick={prevMonth} aria-label="Previous month">‹</button>
+                <span className="cal-month-label">
+                  {monthNames[calendarMonth]} {calendarYear}
+                </span>
+                <button className="cal-nav-btn" onClick={nextMonth} aria-label="Next month">›</button>
+              </div>
+
+              {/* Day-of-week headers */}
+              <div className="calendar-grid">
+                {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((d) => (
+                  <div key={d} className="cal-weekday">{d}</div>
+                ))}
+
+                {/* Day cells */}
+                {buildCalendarDays().map((day, index) => {
+                  if (day === null) {
+                    return <div key={`empty-${index}`} className="cal-day cal-day-empty" />;
+                  }
+                  const dateStr = toDateString(calendarYear, calendarMonth, day);
+                  const isToday = dateStr === todayString;
+                  const isSelected = dateStr === selectedDate;
+                  const hasEvents = eventsForDate(dateStr).length > 0;
+
+                  return (
+                    <button
+                      key={dateStr}
+                      className={[
+                        "cal-day",
+                        isToday ? "cal-day-today" : "",
+                        isSelected ? "cal-day-selected" : "",
+                        hasEvents ? "cal-day-has-events" : "",
+                      ].join(" ").trim()}
+                      onClick={() => selectDay(dateStr)}
+                      aria-label={`${monthNames[calendarMonth]} ${day}, ${calendarYear}`}
+                      aria-pressed={isSelected}
+                    >
+                      <span className="cal-day-num">{day}</span>
+                      {hasEvents && <span className="cal-event-dot" aria-hidden="true" />}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Right: selected date events + form */}
+            <div className="calendar-sidebar">
+              {selectedDate ? (
+                <>
+                  <div className="cal-sidebar-heading">
+                    <h3>
+                      {new Date(selectedDate + "T00:00:00").toLocaleDateString("en-IN", {
+                        weekday: "long", day: "numeric", month: "long",
+                      })}
+                    </h3>
+                    <button
+                      className="primary-button cal-add-btn"
+                      onClick={openAddEventForm}
+                    >
+                      + Add event
+                    </button>
+                  </div>
+
+                  {/* Event form */}
+                  {showEventForm && (
+                    <div className="cal-event-form">
+                      <label className="cal-form-label" htmlFor="event-title">
+                        Event title *
+                      </label>
+                      <input
+                        id="event-title"
+                        className="cal-form-input"
+                        type="text"
+                        value={eventTitle}
+                        onChange={(e) => { setEventTitle(e.target.value); setCalendarSaveStatus(""); }}
+                        placeholder="e.g. DBMS exam, Assignment due"
+                        autoFocus
+                      />
+
+                      <label className="cal-form-label" htmlFor="event-note">
+                        Note (optional)
+                      </label>
+                      <input
+                        id="event-note"
+                        className="cal-form-input"
+                        type="text"
+                        value={eventNote}
+                        onChange={(e) => setEventNote(e.target.value)}
+                        placeholder="Any extra details..."
+                      />
+
+                      {calendarSaveStatus && (
+                        <p className="cal-form-error">{calendarSaveStatus}</p>
+                      )}
+
+                      <div className="cal-form-actions">
+                        <button className="primary-button" onClick={saveEvent}>
+                          {editingEvent ? "Update event" : "Save event"}
+                        </button>
+                        <button
+                          className="secondary-button"
+                          onClick={() => { setShowEventForm(false); setCalendarSaveStatus(""); }}
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* List of events on this date */}
+                  <div className="cal-events-list">
+                    {eventsForDate(selectedDate).length === 0 ? (
+                      <p className="cal-empty">No events on this date. Click "+ Add event" to add one.</p>
+                    ) : (
+                      eventsForDate(selectedDate).map((ev) => (
+                        <div key={ev.id} className="cal-event-item">
+                          <div className="cal-event-info">
+                            <p className="cal-event-title">{ev.title}</p>
+                            {ev.note && <p className="cal-event-note">{ev.note}</p>}
+                          </div>
+                          <div className="cal-event-actions">
+                            <button
+                              className="cal-event-edit"
+                              onClick={() => openEditEventForm(ev)}
+                              aria-label={`Edit ${ev.title}`}
+                            >✎</button>
+                            <button
+                              className="cal-event-delete"
+                              onClick={() => deleteEvent(ev.id)}
+                              aria-label={`Delete ${ev.title}`}
+                            >×</button>
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </>
+              ) : (
+                <div className="cal-empty-sidebar">
+                  <p className="cal-empty">Select a date on the calendar to view or add events.</p>
+                </div>
+              )}
+            </div>
           </section>
         </section>
       )}
