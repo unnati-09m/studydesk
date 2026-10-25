@@ -337,6 +337,15 @@ function StudyDeskApp() {
     setShowEventForm(false);
   }
 
+  // Jump calendar back to today's date and month.
+  function goToToday() {
+    const now = new Date();
+    setCalendarYear(now.getFullYear());
+    setCalendarMonth(now.getMonth());
+    setSelectedDate(todayString);
+    setShowEventForm(false);
+  }
+
   // Click a day on the calendar.
   function selectDay(dateString) {
     setSelectedDate(dateString);
@@ -987,9 +996,14 @@ function StudyDeskApp() {
             <div className="calendar-panel">
               <div className="calendar-nav">
                 <button className="cal-nav-btn" onClick={prevMonth} aria-label="Previous month">‹</button>
-                <span className="cal-month-label">
-                  {monthNames[calendarMonth]} {calendarYear}
-                </span>
+                <div className="cal-nav-center">
+                  <span className="cal-month-label">
+                    {monthNames[calendarMonth]} {calendarYear}
+                  </span>
+                  <button className="cal-today-btn" onClick={goToToday} title="Jump to today">
+                    Today
+                  </button>
+                </div>
                 <button className="cal-nav-btn" onClick={nextMonth} aria-label="Next month">›</button>
               </div>
 

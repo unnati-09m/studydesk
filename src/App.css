@@ -2409,6 +2409,29 @@ textarea:focus-visible {
   color: #1e2a35;
 }
 
+.cal-nav-center {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.cal-today-btn {
+  padding: 4px 10px;
+  border: 1px solid #dce2ea;
+  border-radius: 6px;
+  background: #f7f9fc;
+  color: #3b5840;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 150ms ease;
+}
+
+.cal-today-btn:hover {
+  background: #edf3eb;
+  border-color: #9cb89c;
+}
+
 /* 7-column grid for Sun-Sat */
 .calendar-grid {
   display: grid;
