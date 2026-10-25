@@ -391,12 +391,38 @@
   background: #edf2eb;
 }
 
-.task-filter-tabs {
+.task-controls-bar {
   display: flex;
-  gap: 8px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
   margin-top: 16px;
   border-bottom: 1px solid #eeeeea;
   padding-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+.task-filter-tabs {
+  display: flex;
+  gap: 8px;
+}
+
+.task-search-input {
+  min-width: 140px;
+  max-width: 220px;
+  padding: 6px 12px;
+  border: 1px solid #dce2ea;
+  border-radius: 999px;
+  background: #f7f9fc;
+  font-size: 0.82rem;
+  font: inherit;
+  color: inherit;
+}
+
+.task-search-input:focus {
+  outline: 2px solid #c9ddfa;
+  border-color: #8eb5e8;
+  background: #fff;
 }
 
 .task-filter-btn {

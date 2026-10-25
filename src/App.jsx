@@ -33,13 +33,21 @@ function StudyDeskApp() {
   const [eventCategory, setEventCategory] = useState("General");
   const [calendarSaveStatus, setCalendarSaveStatus] = useState("");
 
+  const [taskSearchQuery, setTaskSearchQuery] = useState("");
+
   const completedCount = tasks.filter(
     (task) => task.completed
   ).length;
 
   const filteredTasks = tasks.filter((task) => {
-    if (taskFilter === "pending") return !task.completed;
-    if (taskFilter === "completed") return task.completed;
+    if (taskFilter === "pending" && task.completed) return false;
+    if (taskFilter === "completed" && !task.completed) return false;
+    if (taskSearchQuery.trim()) {
+      const q = taskSearchQuery.toLowerCase().trim();
+      const matchTitle = task.title?.toLowerCase().includes(q);
+      const matchSubject = task.subject?.toLowerCase().includes(q);
+      return matchTitle || matchSubject;
+    }
     return true;
   });
 
@@ -792,28 +800,39 @@ function StudyDeskApp() {
               </span>
             </div>
 
-            <div className="task-filter-tabs">
-              <button
-                type="button"
-                className={`task-filter-btn ${taskFilter === "all" ? "active" : ""}`}
-                onClick={() => setTaskFilter("all")}
-              >
-                All ({tasks.length})
-              </button>
-              <button
-                type="button"
-                className={`task-filter-btn ${taskFilter === "pending" ? "active" : ""}`}
-                onClick={() => setTaskFilter("pending")}
-              >
-                Pending ({tasks.length - completedCount})
-              </button>
-              <button
-                type="button"
-                className={`task-filter-btn ${taskFilter === "completed" ? "active" : ""}`}
-                onClick={() => setTaskFilter("completed")}
-              >
-                Completed ({completedCount})
-              </button>
+            <div className="task-controls-bar">
+              <div className="task-filter-tabs">
+                <button
+                  type="button"
+                  className={`task-filter-btn ${taskFilter === "all" ? "active" : ""}`}
+                  onClick={() => setTaskFilter("all")}
+                >
+                  All ({tasks.length})
+                </button>
+                <button
+                  type="button"
+                  className={`task-filter-btn ${taskFilter === "pending" ? "active" : ""}`}
+                  onClick={() => setTaskFilter("pending")}
+                >
+                  Pending ({tasks.length - completedCount})
+                </button>
+                <button
+                  type="button"
+                  className={`task-filter-btn ${taskFilter === "completed" ? "active" : ""}`}
+                  onClick={() => setTaskFilter("completed")}
+                >
+                  Completed ({completedCount})
+                </button>
+              </div>
+
+              <input
+                type="text"
+                className="task-search-input"
+                placeholder="Search tasks..."
+                value={taskSearchQuery}
+                onChange={(e) => setTaskSearchQuery(e.target.value)}
+                aria-label="Search tasks"
+              />
             </div>
 
             <div className="task-list">
@@ -821,6 +840,8 @@ function StudyDeskApp() {
                 <p className="empty-state">
                   {tasks.length === 0
                     ? "Nothing on your list yet. Add your first task below."
+                    : taskSearchQuery.trim()
+                    ? `No tasks matching "${taskSearchQuery}".`
                     : taskFilter === "pending"
                     ? "All caught up! No pending tasks."
                     : "No completed tasks yet."}
