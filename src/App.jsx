@@ -10,6 +10,7 @@ function StudyDeskApp() {
   const [tasks, setTasks] = useState([]);
   const [newTask, setNewTask] = useState("");
   const [newTaskSubject, setNewTaskSubject] = useState("");
+  const [newTaskDueDate, setNewTaskDueDate] = useState("");
   const [taskFilter, setTaskFilter] = useState("all");
   const [savedNotes, setSavedNotes] = useState([
     { id: 1, title: "Untitled note", content: "", updatedAt: Date.now() },
@@ -269,6 +270,7 @@ function StudyDeskApp() {
       id: Date.now(),
       title,
       subject: newTaskSubject.trim() || "Personal",
+      dueDate: newTaskDueDate || "",
       time: "No time set",
       completed: false,
     };
@@ -276,6 +278,7 @@ function StudyDeskApp() {
     setTasks((currentTasks) => [...currentTasks, task]);
     setNewTask("");
     setNewTaskSubject("");
+    setNewTaskDueDate("");
   }
 
   // Mark a task as completed or incomplete.
@@ -867,9 +870,14 @@ function StudyDeskApp() {
 
                   <div className="task-content">
                     <p className="task-title">{task.title}</p>
-                    {task.subject && (
-                      <span className="task-subject-badge">{task.subject}</span>
-                    )}
+                    <div className="task-badges-row">
+                      {task.subject && (
+                        <span className="task-subject-badge">{task.subject}</span>
+                      )}
+                      {task.dueDate && (
+                        <span className="task-due-badge">📅 {task.dueDate}</span>
+                      )}
+                    </div>
                   </div>
 
                   <button
@@ -899,6 +907,14 @@ function StudyDeskApp() {
                 onChange={(event) => setNewTaskSubject(event.target.value)}
                 placeholder="Subject (optional)"
                 aria-label="Subject"
+              />
+              <input
+                type="date"
+                className="task-due-input"
+                value={newTaskDueDate}
+                onChange={(event) => setNewTaskDueDate(event.target.value)}
+                aria-label="Due date"
+                title="Due date (optional)"
               />
 
               <button className="primary-button" type="submit">

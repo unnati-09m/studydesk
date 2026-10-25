@@ -498,9 +498,16 @@
   text-decoration: line-through;
 }
 
+.task-badges-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 4px;
+}
+
 .task-subject-badge {
   display: inline-block;
-  margin-top: 4px;
   padding: 2px 8px;
   border-radius: 999px;
   background: #edf3eb;
@@ -510,7 +517,18 @@
   letter-spacing: 0.01em;
 }
 
-.is-completed .task-subject-badge {
+.task-due-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #fdf3e7;
+  color: #92510b;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.is-completed .task-subject-badge,
+.is-completed .task-due-badge {
   opacity: 0.6;
 }
 
@@ -544,7 +562,11 @@
 }
 
 .add-task-form .task-subject-input {
-  flex: 0 0 160px;
+  flex: 0 0 150px;
+}
+
+.add-task-form .task-due-input {
+  flex: 0 0 140px;
 }
 
 .task-summary,
