@@ -1302,6 +1302,7 @@ function TimerWindow() {
   const [timerSeconds, setTimerSeconds] = useState("0");
   const [isFullScreen, setIsFullScreen] = useState(false);
   const [hasStarted, setHasStarted] = useState(false);
+  const [soundEnabled, setSoundEnabled] = useState(true);
 
   useEffect(() => {
     let unsubscribeTimer;
@@ -1336,6 +1337,7 @@ function TimerWindow() {
 
   // Web Audio API synthesized completion chime
   function playTimerChime() {
+    if (!soundEnabled) return;
     try {
       const AudioCtx = window.AudioContext || window.webkitAudioContext;
       if (!AudioCtx) return;
@@ -1370,6 +1372,7 @@ function TimerWindow() {
       playTimerChime();
     }
     prevRemainingRef.current = remainingSeconds;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [remainingSeconds, hasStarted]);
 
   function getSelectedDuration() {
@@ -1485,6 +1488,13 @@ async function startPauseTimer() {
       <header className="topbar timer-window-topbar">
         <span className="brand">StudyDesk</span>
         <div className="timer-window-window-actions">
+          <button
+            className="secondary-button"
+            onClick={() => setSoundEnabled((prev) => !prev)}
+            title="Toggle audio chime"
+          >
+            {soundEnabled ? "Sound: On 🔔" : "Sound: Muted 🔕"}
+          </button>
           <button className="secondary-button" onClick={toggleFullscreen}>
             {isFullScreen ? "Exit full screen" : "Full screen ⛶"}
           </button>
