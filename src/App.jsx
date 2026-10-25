@@ -595,7 +595,7 @@ function StudyDeskApp() {
 
                   <p>
                     Write down thoughts, reminders, and class notes.
-                    Your changes save automatically.
+                    Click Save note when you are ready to keep them.
                   </p>
 
                   <span className="feature-link">
