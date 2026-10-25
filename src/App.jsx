@@ -1,5 +1,5 @@
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import "./App.css";
 
 function StudyDeskApp() {
@@ -1333,6 +1333,44 @@ function TimerWindow() {
       if (typeof unsubscribeFullscreen === "function") unsubscribeFullscreen();
     };
   }, []);
+
+  // Web Audio API synthesized completion chime
+  function playTimerChime() {
+    try {
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      if (!AudioCtx) return;
+      const ctx = new AudioCtx();
+      const now = ctx.currentTime;
+
+      const playTone = (freq, start, duration) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = "sine";
+        osc.frequency.setValueAtTime(freq, start);
+        gain.gain.setValueAtTime(0.12, start);
+        gain.gain.exponentialRampToValueAtTime(0.001, start + duration);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(start);
+        osc.stop(start + duration);
+      };
+
+      playTone(587.33, now, 0.35); // D5
+      playTone(880.0, now + 0.15, 0.55); // A5
+      playTone(1174.66, now + 0.3, 0.8); // D6
+    } catch (err) {
+      console.warn("Could not play audio chime:", err);
+    }
+  }
+
+  const prevRemainingRef = useRef(remainingSeconds);
+
+  useEffect(() => {
+    if (prevRemainingRef.current > 0 && remainingSeconds === 0 && hasStarted) {
+      playTimerChime();
+    }
+    prevRemainingRef.current = remainingSeconds;
+  }, [remainingSeconds, hasStarted]);
 
   function getSelectedDuration() {
     const hours = Number(timerHours);
