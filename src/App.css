@@ -3211,3 +3211,27 @@ textarea:focus-visible {
     padding: 16px;
   }
 }
+
+/* Keep the Calendar feature row aligned with the alternating feature layout */
+.calendar-row {
+  grid-template-columns: 0.95fr 1fr;
+}
+
+.calendar-row .feature-copy {
+  order: 2;
+}
+
+.calendar-row .feature-visual {
+  order: 1;
+}
+
+@media (max-width: 760px) {
+  .calendar-row {
+    grid-template-columns: 1fr;
+  }
+
+  .calendar-row .feature-copy,
+  .calendar-row .feature-visual {
+    order: initial;
+  }
+}
