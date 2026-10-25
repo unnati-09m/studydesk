@@ -660,6 +660,19 @@
   letter-spacing: -0.05em;
 }
 
+.timer-session-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  background: #edf3eb;
+  color: #3b5840;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
 .utility-description {
   color: #777b74;
   line-height: 1.7;

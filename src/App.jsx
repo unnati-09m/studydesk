@@ -1303,6 +1303,13 @@ function TimerWindow() {
   const [isFullScreen, setIsFullScreen] = useState(false);
   const [hasStarted, setHasStarted] = useState(false);
   const [soundEnabled, setSoundEnabled] = useState(true);
+  const [completedSessions, setCompletedSessions] = useState(() => {
+    try {
+      return Number(localStorage.getItem("studydesk_sessions_count") || 0);
+    } catch {
+      return 0;
+    }
+  });
 
   useEffect(() => {
     let unsubscribeTimer;
@@ -1370,6 +1377,15 @@ function TimerWindow() {
   useEffect(() => {
     if (prevRemainingRef.current > 0 && remainingSeconds === 0 && hasStarted) {
       playTimerChime();
+      setCompletedSessions((prev) => {
+        const next = prev + 1;
+        try {
+          localStorage.setItem("studydesk_sessions_count", String(next));
+        } catch {
+          // Ignore
+        }
+        return next;
+      });
     }
     prevRemainingRef.current = remainingSeconds;
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -1554,6 +1570,10 @@ async function startPauseTimer() {
           )}
 
           <p className="timer-display">{formatTime(remainingSeconds)}</p>
+
+          <div className="timer-session-badge">
+            <span>🎯 {completedSessions} focus session{completedSessions === 1 ? "" : "s"} completed</span>
+          </div>
 
           <div className="timer-actions timer-window-timer-actions">
             <button className="primary-button" onClick={startPauseTimer}>
