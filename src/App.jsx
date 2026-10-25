@@ -2,36 +2,12 @@
 import { useEffect, useState } from "react";
 import "./App.css";
 
-const initialTasks = [
-  {
-    id: 1,
-    title: "Revise data structures",
-    subject: "ADA",
-    time: "10:00 AM",
-    completed: false,
-  },
-  {
-    id: 2,
-    title: "Complete database assignment",
-    subject: "DBMS",
-    time: "12:00 PM",
-    completed: false,
-  },
-  {
-    id: 3,
-    title: "Review lecture notes",
-    subject: "Maths",
-    time: "2:00 PM",
-    completed: true,
-  },
-];
-
 function StudyDeskApp() {
   // Current page
   const [page, setPage] = useState("Overview");
 
   // Tasks and multiple saved notes
-  const [tasks, setTasks] = useState(initialTasks);
+  const [tasks, setTasks] = useState([]);
   const [newTask, setNewTask] = useState("");
   const [savedNotes, setSavedNotes] = useState([
     { id: 1, title: "Untitled note", content: "", updatedAt: Date.now() },
@@ -99,6 +75,23 @@ function StudyDeskApp() {
 
     loadSavedData();
   }, []);
+
+  // Auto-save tasks whenever the tasks list changes.
+  // dataLoaded makes sure we don't save before the initial load finishes.
+  useEffect(() => {
+    if (!dataLoaded) return;
+    if (!window.studyDesk) return;
+
+    window.studyDesk.saveData({
+      tasks,
+      notes: "",
+      savedNotes,
+      activeNoteId,
+    }).catch((error) => {
+      console.error("Could not auto-save tasks:", error);
+    });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tasks, dataLoaded]);
 
   // Notes are saved only when the user clicks the Save note button.
   async function saveNotesManually() {
@@ -342,7 +335,7 @@ function StudyDeskApp() {
                 <div className="feature-visual tasks-visual">
                   <div className="preview-header">
                     <span>MY TASKS</span>
-                    <span>02 / 03</span>
+                    <span>{String(completedCount).padStart(2, "0")} / {String(tasks.length).padStart(2, "0")}</span>
                   </div>
 
                   <div className="preview-progress">
