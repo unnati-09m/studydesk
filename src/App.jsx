@@ -160,6 +160,7 @@ function StudyDeskApp() {
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page, dataLoaded, tasks, savedNotes, activeNoteId]);
 
   const activeNote = savedNotes.find((note) => note.id === activeNoteId) ?? savedNotes[0];

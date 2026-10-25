@@ -46,6 +46,7 @@ ipcMain.handle("save-data", (_event, data) => saveData(data));
 function safeFilePart(value) {
   return (
     String(value || "")
+      /* eslint-disable-next-line no-control-regex */
       .replace(/[\\/:*?"<>|\x00-\x1F]/g, "-")
       .trim()
       .slice(0, 60) || "Untitled note"
