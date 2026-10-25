@@ -1382,6 +1382,19 @@ function TimerWindow() {
     }
   }
 
+  async function setPreset(hours, minutes, seconds) {
+    setTimerHours(String(hours));
+    setTimerMinutes(String(minutes));
+    setTimerSeconds(String(seconds));
+    const totalSecs = hours * 3600 + minutes * 60 + seconds;
+    const state = await window.studyDesk?.resetTimer(totalSecs);
+    setHasStarted(false);
+    if (state) {
+      setRemainingSeconds(state.remainingSeconds);
+      setIsRunning(Boolean(state.isRunning));
+    }
+  }
+
 async function startPauseTimer() {
   if (isRunning) {
     await window.studyDesk?.pauseTimer();
@@ -1471,8 +1484,23 @@ async function startPauseTimer() {
                 </div>
               </div>
 
+              <div className="timer-presets">
+                <button type="button" className="timer-preset-btn" onClick={() => setPreset(0, 25, 0)}>
+                  25m Pomodoro
+                </button>
+                <button type="button" className="timer-preset-btn" onClick={() => setPreset(0, 5, 0)}>
+                  5m Break
+                </button>
+                <button type="button" className="timer-preset-btn" onClick={() => setPreset(0, 15, 0)}>
+                  15m Rest
+                </button>
+                <button type="button" className="timer-preset-btn" onClick={() => setPreset(0, 50, 0)}>
+                  50m Deep
+                </button>
+              </div>
+
               <button className="secondary-button" onClick={applyDuration}>
-                Set duration
+                Set custom duration
               </button>
             </>
           )}
