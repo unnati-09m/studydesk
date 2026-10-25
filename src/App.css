@@ -2993,3 +2993,221 @@ textarea:focus-visible {
   background: #eef7f0;
   border-color: #a3d4b4;
 }
+
+
+/* Home page Calendar feature preview */
+.calendar-visual {
+  align-items: stretch;
+  justify-content: flex-start;
+  background: #f0f3ed;
+}
+
+.calendar-preview-date {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 4px 0 16px;
+  border-bottom: 1px solid #dfe5dc;
+}
+
+.calendar-preview-day {
+  display: grid;
+  width: 58px;
+  height: 58px;
+  flex: 0 0 58px;
+  place-items: center;
+  border-radius: 12px;
+  background: #ffffff;
+  color: #344b37;
+  font-size: 1.8rem;
+  font-weight: 600;
+  letter-spacing: -0.05em;
+}
+
+.calendar-preview-date > div,
+.calendar-preview-event > div {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.calendar-preview-date strong {
+  color: #354636;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.calendar-preview-date > div span,
+.calendar-preview-event > div span {
+  color: #788174;
+  font-size: 0.82rem;
+}
+
+.calendar-preview-event {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  padding-top: 2px;
+}
+
+.calendar-preview-event > div {
+  overflow: hidden;
+}
+
+.calendar-preview-event > div strong {
+  overflow: hidden;
+  color: #3c463a;
+  font-size: 0.88rem;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.calendar-preview-dot {
+  width: 9px;
+  height: 9px;
+  flex: 0 0 9px;
+  border-radius: 50%;
+  background: #6f8d68;
+}
+
+.calendar-preview-empty {
+  color: #747d70;
+  font-size: 0.84rem;
+  line-height: 1.6;
+}
+
+/* Notes editor: balanced desktop proportions and a genuinely roomy writing area */
+.notes-workspace {
+  grid-template-columns: minmax(230px, 0.28fr) minmax(0, 1fr);
+  gap: 22px;
+}
+
+.notes-sidebar {
+  align-self: stretch;
+  min-height: 0;
+}
+
+.notes-editor-panel {
+  width: 100%;
+  max-width: none;
+  min-width: 0;
+  min-height: 650px;
+  height: max(76vh, 650px);
+  margin: 0;
+  padding: clamp(22px, 2.4vw, 34px);
+  gap: 14px;
+  overflow: hidden;
+}
+
+.notes-editor-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.notes-editor-heading h3 {
+  margin: 0;
+  font-size: 1.35rem;
+}
+
+.note-title-label {
+  display: block;
+  margin-top: 4px;
+  color: #667064;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.note-title-input {
+  min-height: 50px;
+  margin-top: -7px;
+  border: 1px solid #e1e6df;
+  border-radius: 10px;
+  background: #fff;
+}
+
+.notes-editor {
+  flex: 1 1 auto;
+  width: 100%;
+  min-width: 0;
+  min-height: 320px;
+  height: auto;
+  margin-top: -7px;
+  padding: 22px 24px;
+  border: 1px solid #e1e6df;
+  border-radius: 12px;
+  background: #fdfefc;
+  font-size: 16px;
+  line-height: 1.85;
+  resize: none;
+  overflow: auto;
+}
+
+.notes-editor:focus {
+  outline: 2px solid #c9ddfa;
+  outline-offset: 1px;
+  border-color: #8eb5e8;
+}
+
+.notes-editor-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  flex: 0 0 auto;
+  padding-top: 2px;
+}
+
+.notes-hint {
+  margin: 0;
+}
+
+.notes-save-actions {
+  align-items: center;
+  gap: 12px;
+}
+
+@media (max-width: 760px) {
+  .notes-workspace {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .notes-editor-panel {
+    min-height: 650px;
+    height: auto;
+  }
+
+  .notes-editor {
+    min-height: 380px;
+  }
+
+  .notes-editor-footer {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .notes-save-actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+}
+
+@media (max-width: 480px) {
+  .calendar-preview-date {
+    gap: 12px;
+  }
+
+  .notes-editor-panel {
+    padding: 18px;
+  }
+
+  .notes-editor {
+    min-height: 340px;
+    padding: 16px;
+  }
+}
