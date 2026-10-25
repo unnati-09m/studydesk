@@ -147,6 +147,21 @@ function StudyDeskApp() {
     }
   }
 
+  // Support Ctrl+S / Cmd+S shortcut to manually save notes
+  useEffect(() => {
+    function handleKeyDown(event) {
+      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "s") {
+        if (page === "Quick notes") {
+          event.preventDefault();
+          saveNotesManually();
+        }
+      }
+    }
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [page, dataLoaded, tasks, savedNotes, activeNoteId]);
+
   const activeNote = savedNotes.find((note) => note.id === activeNoteId) ?? savedNotes[0];
 
   function createNote() {
@@ -943,6 +958,7 @@ function StudyDeskApp() {
       className="notes-save-button"
       onClick={saveNotesManually}
       disabled={!dataLoaded || saveStatus === "Saving..."}
+      title="Save note (Ctrl+S / ⌘S)"
     >
       {saveStatus === "Saving..." ? "Saving..." : "Save note"}
     </button>
