@@ -18,7 +18,7 @@ let timerState = {
 const dataPath = () =>
   path.join(app.getPath("userData"), "studydesk-data.json");
 
-const notesFolderPath = () => path.join(app.getAppPath(), "notes");
+const notesFolderPath = () => path.join(app.getPath("userData"), "notes");
 
 async function loadData() {
   try {
@@ -295,7 +295,11 @@ function createWindow() {
     },
   });
 
-  mainWindow.loadURL("http://localhost:5173");
+  if (app.isPackaged) {
+    mainWindow.loadFile(path.join(__dirname, "../dist/index.html"));
+  } else {
+    mainWindow.loadURL("http://localhost:5173");
+  }
 
   mainWindow.on("closed", () => {
     mainWindow = null;
@@ -351,7 +355,13 @@ function createTimerWindow() {
     };
   });
 
-  timerWindow.loadURL("http://localhost:5173/?window=timer");
+  if (app.isPackaged) {
+    timerWindow.loadFile(path.join(__dirname, "../dist/index.html"), {
+      query: { window: "timer" },
+    });
+  } else {
+    timerWindow.loadURL("http://localhost:5173/?window=timer");
+  }
 }
 
 ipcMain.handle("open-timer-window", () => {
