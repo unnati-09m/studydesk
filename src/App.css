@@ -391,8 +391,40 @@
   background: #edf2eb;
 }
 
+.task-filter-tabs {
+  display: flex;
+  gap: 8px;
+  margin-top: 16px;
+  border-bottom: 1px solid #eeeeea;
+  padding-bottom: 12px;
+}
+
+.task-filter-btn {
+  border: 1px solid #dce2ea;
+  background: #f7f9fc;
+  color: #555e68;
+  font-size: 0.82rem;
+  font-weight: 500;
+  padding: 6px 12px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all 150ms ease;
+}
+
+.task-filter-btn:hover {
+  background: #edf1f7;
+  color: #252b35;
+}
+
+.task-filter-btn.active {
+  background: #3b5840;
+  border-color: #3b5840;
+  color: #fff;
+  font-weight: 600;
+}
+
 .task-list {
-  margin-top: 22px;
+  margin-top: 16px;
 }
 
 .task-row {

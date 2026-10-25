@@ -10,6 +10,7 @@ function StudyDeskApp() {
   const [tasks, setTasks] = useState([]);
   const [newTask, setNewTask] = useState("");
   const [newTaskSubject, setNewTaskSubject] = useState("");
+  const [taskFilter, setTaskFilter] = useState("all");
   const [savedNotes, setSavedNotes] = useState([
     { id: 1, title: "Untitled note", content: "", updatedAt: Date.now() },
   ]);
@@ -35,6 +36,12 @@ function StudyDeskApp() {
   const completedCount = tasks.filter(
     (task) => task.completed
   ).length;
+
+  const filteredTasks = tasks.filter((task) => {
+    if (taskFilter === "pending") return !task.completed;
+    if (taskFilter === "completed") return task.completed;
+    return true;
+  });
 
   // Load saved tasks and notes from Electron.
   useEffect(() => {
@@ -778,14 +785,42 @@ function StudyDeskApp() {
               </span>
             </div>
 
+            <div className="task-filter-tabs">
+              <button
+                type="button"
+                className={`task-filter-btn ${taskFilter === "all" ? "active" : ""}`}
+                onClick={() => setTaskFilter("all")}
+              >
+                All ({tasks.length})
+              </button>
+              <button
+                type="button"
+                className={`task-filter-btn ${taskFilter === "pending" ? "active" : ""}`}
+                onClick={() => setTaskFilter("pending")}
+              >
+                Pending ({tasks.length - completedCount})
+              </button>
+              <button
+                type="button"
+                className={`task-filter-btn ${taskFilter === "completed" ? "active" : ""}`}
+                onClick={() => setTaskFilter("completed")}
+              >
+                Completed ({completedCount})
+              </button>
+            </div>
+
             <div className="task-list">
-              {tasks.length === 0 && (
+              {filteredTasks.length === 0 && (
                 <p className="empty-state">
-                  Nothing on your list yet. Add your first task below.
+                  {tasks.length === 0
+                    ? "Nothing on your list yet. Add your first task below."
+                    : taskFilter === "pending"
+                    ? "All caught up! No pending tasks."
+                    : "No completed tasks yet."}
                 </p>
               )}
 
-              {tasks.map((task) => (
+              {filteredTasks.map((task) => (
                 <article
                   className={`task-row ${
                     task.completed ? "is-completed" : ""
