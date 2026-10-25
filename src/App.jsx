@@ -9,6 +9,7 @@ function StudyDeskApp() {
   // Tasks and multiple saved notes
   const [tasks, setTasks] = useState([]);
   const [newTask, setNewTask] = useState("");
+  const [newTaskSubject, setNewTaskSubject] = useState("");
   const [savedNotes, setSavedNotes] = useState([
     { id: 1, title: "Untitled note", content: "", updatedAt: Date.now() },
   ]);
@@ -227,13 +228,14 @@ function StudyDeskApp() {
     const task = {
       id: Date.now(),
       title,
-      subject: "Personal",
+      subject: newTaskSubject.trim() || "Personal",
       time: "No time set",
       completed: false,
     };
 
     setTasks((currentTasks) => [...currentTasks, task]);
     setNewTask("");
+    setNewTaskSubject("");
   }
 
   // Mark a task as completed or incomplete.
@@ -746,6 +748,9 @@ function StudyDeskApp() {
 
                   <div className="task-content">
                     <p className="task-title">{task.title}</p>
+                    {task.subject && (
+                      <span className="task-subject-badge">{task.subject}</span>
+                    )}
                   </div>
 
                   <button
@@ -766,6 +771,14 @@ function StudyDeskApp() {
                 onChange={(event) => setNewTask(event.target.value)}
                 placeholder="What needs to get done?"
                 aria-label="New task"
+              />
+              <input
+                type="text"
+                className="task-subject-input"
+                value={newTaskSubject}
+                onChange={(event) => setNewTaskSubject(event.target.value)}
+                placeholder="Subject (optional)"
+                aria-label="Subject"
               />
 
               <button className="primary-button" type="submit">

@@ -440,6 +440,22 @@
   text-decoration: line-through;
 }
 
+.task-subject-badge {
+  display: inline-block;
+  margin-top: 4px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #edf3eb;
+  color: #3b5840;
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+}
+
+.is-completed .task-subject-badge {
+  opacity: 0.6;
+}
+
 .task-delete {
   border: 0;
   background: transparent;
@@ -467,6 +483,10 @@
 
 .add-task-form input {
   flex: 1;
+}
+
+.add-task-form .task-subject-input {
+  flex: 0 0 160px;
 }
 
 .task-summary,
