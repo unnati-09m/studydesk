@@ -184,6 +184,14 @@ function StudyDeskApp() {
   }
 
   function deleteNote(noteId) {
+    const targetNote = savedNotes.find((note) => note.id === noteId);
+    if (targetNote && (targetNote.content.trim() || (targetNote.title && targetNote.title !== "Untitled note"))) {
+      const noteName = targetNote.title.trim() || "Untitled note";
+      if (!window.confirm(`Delete "${noteName}"? This action cannot be undone.`)) {
+        return;
+      }
+    }
+
     const remainingNotes = savedNotes.filter((note) => note.id !== noteId);
 
     if (window.studyDesk?.deleteNoteTxt) {
