@@ -16,6 +16,7 @@ function StudyDeskApp() {
     { id: 1, title: "Untitled note", content: "", updatedAt: Date.now() },
   ]);
   const [activeNoteId, setActiveNoteId] = useState(1);
+  const [noteSearchQuery, setNoteSearchQuery] = useState("");
 
 
   // Electron data-saving status
@@ -50,6 +51,14 @@ function StudyDeskApp() {
       return matchTitle || matchSubject;
     }
     return true;
+  });
+
+  const filteredNotes = savedNotes.filter((note) => {
+    if (!noteSearchQuery.trim()) return true;
+    const q = noteSearchQuery.toLowerCase().trim();
+    const matchTitle = note.title?.toLowerCase().includes(q);
+    const matchContent = note.content?.toLowerCase().includes(q);
+    return matchTitle || matchContent;
   });
 
   // Load saved tasks and notes from Electron.
@@ -991,29 +1000,48 @@ function StudyDeskApp() {
                 </button>
               </div>
 
+              <div className="notes-search-wrap">
+                <input
+                  type="text"
+                  className="notes-search-input"
+                  placeholder="Search notes..."
+                  value={noteSearchQuery}
+                  onChange={(e) => setNoteSearchQuery(e.target.value)}
+                  aria-label="Search notes"
+                />
+              </div>
+
               <div className="saved-notes-list">
-                {savedNotes.map((note) => (
-                  <div
-                    className={`saved-note-item ${note.id === activeNoteId ? "active" : ""}`}
-                    key={note.id}
-                  >
-                    <button className="saved-note-select" onClick={() => setActiveNoteId(note.id)}>
-                      <span className="saved-note-title">{note.title || "Untitled note"}</span>
-                      <span className="saved-note-preview">
-                        {note.content.trim() ? note.content.trim().replace(/\s+/g, " ").slice(0, 72) : "No content yet"}
-                      </span>
-                      <span className="saved-note-date">
-                        {note.updatedAt ? new Date(note.updatedAt).toLocaleDateString() : "New note"}
-                      </span>
-                    </button>
-                    <button
-                      className="saved-note-delete"
-                      onClick={() => deleteNote(note.id)}
-                      aria-label={`Delete ${note.title || "note"}`}
-                      title="Delete note"
-                    >×</button>
-                  </div>
-                ))}
+                {filteredNotes.length === 0 ? (
+                  <p className="empty-state">
+                    {noteSearchQuery.trim()
+                      ? `No notes matching "${noteSearchQuery}".`
+                      : "No notes yet."}
+                  </p>
+                ) : (
+                  filteredNotes.map((note) => (
+                    <div
+                      className={`saved-note-item ${note.id === activeNoteId ? "active" : ""}`}
+                      key={note.id}
+                    >
+                      <button className="saved-note-select" onClick={() => setActiveNoteId(note.id)}>
+                        <span className="saved-note-title">{note.title || "Untitled note"}</span>
+                        <span className="saved-note-preview">
+                          {note.content.trim() ? note.content.trim().replace(/\s+/g, " ").slice(0, 72) : "No content yet"}
+                        </span>
+                        <span className="saved-note-date">
+                          {note.updatedAt ? new Date(note.updatedAt).toLocaleDateString() : "New note"}
+                        </span>
+                      </button>
+                      <button
+                        className="saved-note-delete"
+                        onClick={() => deleteNote(note.id)}
+                        aria-label={`Delete ${note.title || "note"}`}
+                        title="Delete note"
+                      >×</button>
+                    </div>
+                  ))
+                )}
               </div>
             </aside>
 

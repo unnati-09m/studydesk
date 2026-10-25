@@ -2232,6 +2232,28 @@ textarea:focus-visible {
   cursor: pointer;
 }
 
+.notes-search-wrap {
+  width: 100%;
+}
+
+.notes-search-input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 8px 12px;
+  border: 1px solid #dce2ea;
+  border-radius: 8px;
+  background: #f7f9fc;
+  font-size: 0.82rem;
+  font: inherit;
+  color: inherit;
+}
+
+.notes-search-input:focus {
+  outline: 2px solid #c9ddfa;
+  border-color: #8eb5e8;
+  background: #fff;
+}
+
 .saved-notes-list {
   display: flex;
   flex-direction: column;
