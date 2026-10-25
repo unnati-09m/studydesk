@@ -765,6 +765,7 @@ function StudyDeskApp() {
                     className="task-delete"
                     onClick={() => deleteTask(task.id)}
                     aria-label={`Delete ${task.title}`}
+                    title="Delete task"
                   >
                     ×
                   </button>
@@ -1032,7 +1033,13 @@ function StudyDeskApp() {
 
                   {/* Event form */}
                   {showEventForm && (
-                    <div className="cal-event-form">
+                    <form
+                      className="cal-event-form"
+                      onSubmit={(e) => {
+                        e.preventDefault();
+                        saveEvent();
+                      }}
+                    >
                       <label className="cal-form-label" htmlFor="event-title">
                         Event title *
                       </label>
@@ -1063,17 +1070,18 @@ function StudyDeskApp() {
                       )}
 
                       <div className="cal-form-actions">
-                        <button className="primary-button" onClick={saveEvent}>
+                        <button className="primary-button" type="submit">
                           {editingEvent ? "Update event" : "Save event"}
                         </button>
                         <button
                           className="secondary-button"
+                          type="button"
                           onClick={() => { setShowEventForm(false); setCalendarSaveStatus(""); }}
                         >
                           Cancel
                         </button>
                       </div>
-                    </div>
+                    </form>
                   )}
 
                   {/* List of events on this date */}
@@ -1092,11 +1100,13 @@ function StudyDeskApp() {
                               className="cal-event-edit"
                               onClick={() => openEditEventForm(ev)}
                               aria-label={`Edit ${ev.title}`}
+                              title="Edit event"
                             >✎</button>
                             <button
                               className="cal-event-delete"
                               onClick={() => deleteEvent(ev.id)}
                               aria-label={`Delete ${ev.title}`}
+                              title="Delete event"
                             >×</button>
                           </div>
                         </div>
