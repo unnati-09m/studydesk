@@ -423,6 +423,11 @@ function StudyDeskApp() {
 
   // Delete an event.
   async function deleteEvent(eventId) {
+    const targetEvent = calendarEvents.find((ev) => ev.id === eventId);
+    const eventName = targetEvent?.title || "this event";
+    if (!window.confirm(`Delete "${eventName}"? This action cannot be undone.`)) {
+      return;
+    }
     const updatedEvents = calendarEvents.filter((ev) => ev.id !== eventId);
     setCalendarEvents(updatedEvents);
     await saveCalendarEvents(updatedEvents);
