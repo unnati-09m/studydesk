@@ -1078,7 +1078,14 @@ function StudyDeskApp() {
               
 <div className="notes-editor-footer">
   <p className="notes-hint">
-    {(activeNote?.content ?? "").length} characters
+    {activeNote?.content?.trim()
+      ? activeNote.content.trim().split(/\s+/).length
+      : 0}{" "}
+    {activeNote?.content?.trim() &&
+    activeNote.content.trim().split(/\s+/).length === 1
+      ? "word"
+      : "words"}{" "}
+    · {(activeNote?.content ?? "").length} characters
   </p>
 
   <div className="notes-save-actions">
