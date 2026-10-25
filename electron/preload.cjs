@@ -14,6 +14,11 @@ contextBridge.exposeInMainWorld("studyDesk", {
   getTimerState: () => ipcRenderer.invoke("timer-get-state"),
   toggleTimerFullscreen: () => ipcRenderer.invoke("timer-toggle-fullscreen"),
   closeTimerWindow: () => ipcRenderer.invoke("timer-close-window"),
+  saveNoteTxt: (note) =>
+  ipcRenderer.invoke("save-note-txt", note),
+
+deleteNoteTxt: (noteId) =>
+  ipcRenderer.invoke("delete-note-txt", noteId),
 
   onTimerUpdate: (callback) => {
     const listener = (_event, state) => callback(state);

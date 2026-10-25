@@ -30,10 +30,13 @@ function StudyDeskApp() {
   // Current page
   const [page, setPage] = useState("Overview");
 
-  // Tasks and notes
+  // Tasks and multiple saved notes
   const [tasks, setTasks] = useState(initialTasks);
   const [newTask, setNewTask] = useState("");
-  const [notes, setNotes] = useState("");
+  const [savedNotes, setSavedNotes] = useState([
+    { id: 1, title: "Untitled note", content: "", updatedAt: Date.now() },
+  ]);
+  const [activeNoteId, setActiveNoteId] = useState(1);
 
 
   // Electron data-saving status
@@ -59,8 +62,32 @@ function StudyDeskApp() {
             setTasks(savedData.tasks);
           }
 
-          if (typeof savedData.notes === "string") {
-            setNotes(savedData.notes);
+          if (Array.isArray(savedData.savedNotes) && savedData.savedNotes.length > 0) {
+            setSavedNotes(savedData.savedNotes);
+            const requestedActiveId = savedData.activeNoteId;
+            const activeExists = savedData.savedNotes.some(
+              (note) => note.id === requestedActiveId
+            );
+            setActiveNoteId(activeExists ? requestedActiveId : savedData.savedNotes[0].id);
+          } else if (typeof savedData.notes === "string" && savedData.notes.length > 0) {
+            // Migrate the old single-note format without losing its content.
+            const legacyNote = {
+              id: Date.now(),
+              title: savedData.notes.split("\n")[0].trim().slice(0, 40) || "My first note",
+              content: savedData.notes,
+              updatedAt: Date.now(),
+            };
+            setSavedNotes([legacyNote]);
+            setActiveNoteId(legacyNote.id);
+          } else {
+            const firstNote = {
+              id: Date.now(),
+              title: "Untitled note",
+              content: "",
+              updatedAt: Date.now(),
+            };
+            setSavedNotes([firstNote]);
+            setActiveNoteId(firstNote.id);
           }
         }
       } catch (error) {
@@ -73,8 +100,8 @@ function StudyDeskApp() {
     loadSavedData();
   }, []);
 
-  // Save tasks and notes after five seconds without changes.
-  useEffect(() => {
+  // Notes are saved only when the user clicks the Save note button.
+  async function saveNotesManually() {
     if (!dataLoaded) return;
 
     if (!window.studyDesk) {
@@ -82,20 +109,101 @@ function StudyDeskApp() {
       return;
     }
 
-    setSaveStatus("Saving changes...");
+    setSaveStatus("Saving...");
 
-    const saveTimer = window.setTimeout(async () => {
-      try {
-        await window.studyDesk.saveData({ tasks, notes });
-        setSaveStatus("All changes saved");
-      } catch (error) {
-        console.error("Could not save data:", error);
-        setSaveStatus("Unable to save changes");
+    try {
+      const currentActiveNote = savedNotes.find((note) => note.id === activeNoteId);
+
+      await window.studyDesk.saveData({
+        tasks,
+        // Keep this field for compatibility with older saved data.
+        notes: currentActiveNote?.content ?? "",
+        savedNotes,
+        activeNoteId,
+      });
+
+      if (window.studyDesk.saveNoteTxt) {
+        await Promise.all(
+          savedNotes.map((note) =>
+            window.studyDesk.saveNoteTxt({
+              id: note.id,
+              title: note.title || "Untitled note",
+              content: note.content || "",
+            })
+          )
+        );
+        setSaveStatus("Saved successfully");
+      } else {
+        setSaveStatus("Saved in app; TXT saving is not configured");
       }
-    }, 5000);
+    } catch (error) {
+      console.error("Could not save notes:", error);
+      setSaveStatus("Could not save — try again");
+    }
+  }
 
-    return () => window.clearTimeout(saveTimer);
-  }, [tasks, notes, dataLoaded]);
+  const activeNote = savedNotes.find((note) => note.id === activeNoteId) ?? savedNotes[0];
+
+  function createNote() {
+    const newNote = {
+      id: Date.now(),
+      title: "Untitled note",
+      content: "",
+      updatedAt: Date.now(),
+    };
+    setSavedNotes((currentNotes) => [newNote, ...currentNotes]);
+    setActiveNoteId(newNote.id);
+    setSaveStatus("Unsaved changes");
+  }
+
+  function updateActiveNoteTitle(title) {
+    setSavedNotes((currentNotes) =>
+      currentNotes.map((note) =>
+        note.id === activeNoteId
+          ? { ...note, title, updatedAt: Date.now() }
+          : note
+      )
+    );
+    setSaveStatus("Unsaved changes");
+  }
+
+  function updateActiveNote(content) {
+    setSavedNotes((currentNotes) =>
+      currentNotes.map((note) =>
+        note.id === activeNoteId
+          ? { ...note, content, updatedAt: Date.now() }
+          : note
+      )
+    );
+    setSaveStatus("Unsaved changes");
+  }
+
+  function deleteNote(noteId) {
+    const remainingNotes = savedNotes.filter((note) => note.id !== noteId);
+
+    if (window.studyDesk?.deleteNoteTxt) {
+      window.studyDesk.deleteNoteTxt(noteId).catch((error) => {
+        console.error("Could not delete note text file:", error);
+      });
+    }
+
+    if (remainingNotes.length === 0) {
+      const blankNote = {
+        id: Date.now(),
+        title: "Untitled note",
+        content: "",
+        updatedAt: Date.now(),
+      };
+      setSavedNotes([blankNote]);
+      setActiveNoteId(blankNote.id);
+      return;
+    }
+
+    setSavedNotes(remainingNotes);
+    if (activeNoteId === noteId) {
+      setActiveNoteId(remainingNotes[0].id);
+    }
+  }
 
 
   // Navigate between pages.
@@ -480,7 +588,7 @@ function StudyDeskApp() {
               className="primary-button"
               onClick={() => window.studyDesk?.openTimerWindow()}
             >
-              Open timer window
+              Open timer window ↗
             </button>
           </section>
         </section>
@@ -488,34 +596,124 @@ function StudyDeskApp() {
 
       {/* Quick notes page */}
       {page === "Quick notes" && (
-        <section className="inner-page">
+        <section className="inner-page notes-page">
           <div className="section-heading">
             <p className="eyebrow">SAVE THAT THOUGHT</p>
-
             <h2>A place for your ideas.</h2>
-
             <p className="section-description">
-              Write freely. Your changes save automatically after
-              five seconds of inactivity.
+              Give each note a title, write freely in the editor, then click Save note when you are ready.
             </p>
           </div>
 
-          <section className="utility-panel notes-panel">
-            <div className="panel-heading">
-              <h3>Quick notes</h3>
+          <section className="notes-workspace">
+            <aside className="notes-sidebar">
+              <div className="notes-sidebar-heading">
+                <div>
+                  <h3>Saved notes</h3>
+                  <p>{savedNotes.length} {savedNotes.length === 1 ? "note" : "notes"}</p>
+                </div>
+                <button className="primary-button notes-new-button" onClick={createNote} aria-label="Create new note">
+                  + New
+                </button>
+              </div>
 
-              <span className="save-status">{saveStatus}</span>
-            </div>
+              <div className="saved-notes-list">
+                {savedNotes.map((note) => (
+                  <div
+                    className={`saved-note-item ${note.id === activeNoteId ? "active" : ""}`}
+                    key={note.id}
+                  >
+                    <button className="saved-note-select" onClick={() => setActiveNoteId(note.id)}>
+                      <span className="saved-note-title">{note.title || "Untitled note"}</span>
+                      <span className="saved-note-preview">
+                        {note.content.trim() ? note.content.trim().replace(/\s+/g, " ").slice(0, 72) : "No content yet"}
+                      </span>
+                      <span className="saved-note-date">
+                        {note.updatedAt ? new Date(note.updatedAt).toLocaleDateString() : "New note"}
+                      </span>
+                    </button>
+                    <button
+                      className="saved-note-delete"
+                      onClick={() => deleteNote(note.id)}
+                      aria-label={`Delete ${note.title || "note"}`}
+                      title="Delete note"
+                    >×</button>
+                  </div>
+                ))}
+              </div>
+            </aside>
 
-            <textarea
-              value={notes}
-              onChange={(event) => setNotes(event.target.value)}
-              placeholder="Start writing something worth remembering..."
-              aria-label="Quick notes"
-              rows={12}
-            />
+            <section className="utility-panel notes-editor-panel">
+              <div className="notes-editor-heading">
+                <div>
+                  <p className="eyebrow">CURRENT NOTE</p>
+                  <h3>Write your note</h3>
+                </div>
+                <span className="save-status">{saveStatus}</span>
+              </div>
 
-            <p className="notes-hint">{notes.length} characters</p>
+              <label className="note-title-label" htmlFor="note-title">Title</label>
+              <input
+                id="note-title"
+                className="note-title-input"
+                type="text"
+                value={activeNote?.title ?? ""}
+                onChange={(event) => updateActiveNoteTitle(event.target.value)}
+                placeholder="Give your note a title..."
+                aria-label="Note title"
+              />
+
+              <label className="note-title-label" htmlFor="note-content">Your notes</label>
+              <textarea
+                id="note-content"
+                className="notes-editor"
+                value={activeNote?.content ?? ""}
+                onChange={(event) => updateActiveNote(event.target.value)}
+                placeholder="Start writing here... Your note content will stay separate from the title."
+                aria-label="Current note content"
+                rows={24}
+              />
+              
+<div className="notes-editor-footer">
+  <p className="notes-hint">
+    {(activeNote?.content ?? "").length} characters
+  </p>
+
+  <div className="notes-save-actions">
+    <span
+      role="status"
+      className={`save-feedback ${
+        saveStatus === "Saved successfully"
+          ? "save-success"
+          : saveStatus.includes("Could not") ||
+            saveStatus.includes("unavailable")
+          ? "save-error"
+          : ""
+      }`}
+    >
+      {saveStatus === "Saved successfully"
+        ? "✓ Saved successfully!"
+        : saveStatus === "Saving..."
+        ? "Saving your note..."
+        : saveStatus === "Unsaved changes"
+        ? "Unsaved changes"
+        : saveStatus === "All changes saved"
+        ? ""
+        : saveStatus}
+    </span>
+
+    <button
+      type="button"
+      className="notes-save-button"
+      onClick={saveNotesManually}
+      disabled={!dataLoaded || saveStatus === "Saving..."}
+    >
+      {saveStatus === "Saving..." ? "Saving..." : "Save note"}
+    </button>
+  </div>
+</div>
+
+            </section>
           </section>
         </section>
       )}
@@ -598,71 +796,49 @@ function TimerWindow() {
 
   async function applyDuration() {
     const duration = getSelectedDuration();
-
     if (duration < 1) {
       window.alert("Enter a duration greater than 00:00:00 first.");
       return;
     }
 
     const state = await window.studyDesk?.resetTimer(duration);
-
-    // A newly selected duration has not started yet.
     setHasStarted(false);
-
     if (state) {
-      setRemainingSeconds(state.remainingSeconds ?? duration);
-      setIsRunning(Boolean(state.isRunning));
-    } else {
-      setRemainingSeconds(duration);
-      setIsRunning(false);
-    }
-  }
-
-  async function startPauseTimer() {
-    if (isRunning) {
-      await window.studyDesk?.pauseTimer();
-      return;
-    }
-
-    // Start a fresh session after setting a duration, resetting, or opening a new timer window.
-    if (!hasStarted || remainingSeconds <= 0) {
-      const duration = getSelectedDuration();
-
-      if (duration < 1) {
-        window.alert("Set a duration greater than 00:00:00 before starting.");
-        return;
-      }
-
-      const state = await window.studyDesk?.startTimer(duration);
-      setHasStarted(true);
-
-      if (state) {
-        setRemainingSeconds(state.remainingSeconds ?? duration);
-        setIsRunning(Boolean(state.isRunning));
-      }
-      return;
-    }
-
-    // Resume only a session that was started and then paused.
-    const state = await window.studyDesk?.resumeTimer();
-    if (state) {
-      setRemainingSeconds(state.remainingSeconds ?? remainingSeconds);
+      setRemainingSeconds(state.remainingSeconds);
       setIsRunning(Boolean(state.isRunning));
     }
   }
+
+async function startPauseTimer() {
+  if (isRunning) {
+    await window.studyDesk?.pauseTimer();
+    return;
+  }
+
+  if (!hasStarted || remainingSeconds <= 0) {
+    const duration = getSelectedDuration();
+
+    if (duration < 1) {
+      window.alert("Set a duration greater than 00:00:00 before starting.");
+      return;
+    }
+
+    await window.studyDesk?.startTimer(duration);
+    setHasStarted(true);
+    return;
+  }
+
+  await window.studyDesk?.resumeTimer();
+}
+
 
   async function resetTimer() {
     const duration = getSelectedDuration();
     const state = await window.studyDesk?.resetTimer(duration);
-
     setHasStarted(false);
-
     if (state) {
       setRemainingSeconds(state.remainingSeconds ?? duration);
       setIsRunning(Boolean(state.isRunning));
-    } else {
-      setRemainingSeconds(duration);
-      setIsRunning(false);
     }
   }
 
