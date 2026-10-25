@@ -29,6 +29,7 @@ function StudyDeskApp() {
   const [editingEvent, setEditingEvent] = useState(null); // null = new, object = editing
   const [eventTitle, setEventTitle] = useState("");
   const [eventNote, setEventNote] = useState("");
+  const [eventCategory, setEventCategory] = useState("General");
   const [calendarSaveStatus, setCalendarSaveStatus] = useState("");
 
   const completedCount = tasks.filter(
@@ -353,6 +354,7 @@ function StudyDeskApp() {
     setEditingEvent(null);
     setEventTitle("");
     setEventNote("");
+    setEventCategory("General");
   }
 
   // Open the "add event" form for the selected date.
@@ -360,6 +362,7 @@ function StudyDeskApp() {
     setEditingEvent(null);
     setEventTitle("");
     setEventNote("");
+    setEventCategory("General");
     setShowEventForm(true);
   }
 
@@ -368,6 +371,7 @@ function StudyDeskApp() {
     setEditingEvent(event);
     setEventTitle(event.title);
     setEventNote(event.note || "");
+    setEventCategory(event.category || "General");
     setShowEventForm(true);
   }
 
@@ -386,7 +390,12 @@ function StudyDeskApp() {
       // Update existing event.
       updatedEvents = calendarEvents.map((ev) =>
         ev.id === editingEvent.id
-          ? { ...ev, title, note: eventNote.trim() }
+          ? {
+              ...ev,
+              title,
+              note: eventNote.trim(),
+              category: eventCategory || "General",
+            }
           : ev
       );
     } else {
@@ -396,6 +405,7 @@ function StudyDeskApp() {
         date: selectedDate,
         title,
         note: eventNote.trim(),
+        category: eventCategory || "General",
       };
       updatedEvents = [...calendarEvents, newEvent];
     }
@@ -406,6 +416,7 @@ function StudyDeskApp() {
     setEditingEvent(null);
     setEventTitle("");
     setEventNote("");
+    setEventCategory("General");
     setCalendarSaveStatus("Event saved!");
     setTimeout(() => setCalendarSaveStatus(""), 2500);
   }
@@ -698,7 +709,14 @@ function StudyDeskApp() {
                       </span>
                     </div>
                     <div className="upcoming-event-info">
-                      <p className="upcoming-event-title">{ev.title}</p>
+                      <div className="upcoming-title-row">
+                        <p className="upcoming-event-title">{ev.title}</p>
+                        {ev.category && (
+                          <span className={`cal-event-category cat-${ev.category.toLowerCase()}`}>
+                            {ev.category}
+                          </span>
+                        )}
+                      </div>
                       {ev.note && <p className="upcoming-event-note">{ev.note}</p>}
                     </div>
                     <button
@@ -1084,6 +1102,22 @@ function StudyDeskApp() {
                         autoFocus
                       />
 
+                      <label className="cal-form-label" htmlFor="event-category">
+                        Category
+                      </label>
+                      <select
+                        id="event-category"
+                        className="cal-form-input cal-form-select"
+                        value={eventCategory}
+                        onChange={(e) => setEventCategory(e.target.value)}
+                      >
+                        <option value="General">General</option>
+                        <option value="Exam">Exam</option>
+                        <option value="Assignment">Assignment</option>
+                        <option value="Lecture">Lecture</option>
+                        <option value="Deadline">Deadline</option>
+                      </select>
+
                       <label className="cal-form-label" htmlFor="event-note">
                         Note (optional)
                       </label>
@@ -1123,7 +1157,14 @@ function StudyDeskApp() {
                       eventsForDate(selectedDate).map((ev) => (
                         <div key={ev.id} className="cal-event-item">
                           <div className="cal-event-info">
-                            <p className="cal-event-title">{ev.title}</p>
+                            <div className="cal-event-title-row">
+                              <p className="cal-event-title">{ev.title}</p>
+                              {ev.category && (
+                                <span className={`cal-event-category cat-${ev.category.toLowerCase()}`}>
+                                  {ev.category}
+                                </span>
+                              )}
+                            </div>
                             {ev.note && <p className="cal-event-note">{ev.note}</p>}
                           </div>
                           <div className="cal-event-actions">

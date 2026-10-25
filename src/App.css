@@ -2580,6 +2580,52 @@ textarea:focus-visible {
   border-color: #8eb5e8;
 }
 
+.cal-form-select {
+  cursor: pointer;
+}
+
+.cal-event-title-row,
+.upcoming-title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.cal-event-category {
+  display: inline-block;
+  padding: 2px 7px;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.cal-event-category.cat-general {
+  background: #edf3eb;
+  color: #3b5840;
+}
+
+.cal-event-category.cat-exam {
+  background: #fde8e8;
+  color: #9b1c1c;
+}
+
+.cal-event-category.cat-assignment {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.cal-event-category.cat-lecture {
+  background: #e0f2fe;
+  color: #0369a1;
+}
+
+.cal-event-category.cat-deadline {
+  background: #f3e8ff;
+  color: #6b21a8;
+}
+
 .cal-form-error {
   margin: 0;
   color: #c0392b;
