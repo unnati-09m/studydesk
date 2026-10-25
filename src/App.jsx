@@ -288,6 +288,13 @@ function StudyDeskApp() {
     );
   }
 
+  // Clear all completed tasks at once.
+  function clearCompletedTasks() {
+    if (completedCount === 0) return;
+    if (!window.confirm(`Clear all ${completedCount} completed task(s)?`)) return;
+    setTasks((currentTasks) => currentTasks.filter((task) => !task.completed));
+  }
+
   // ---- Calendar helpers ----
 
   // Load calendar events from Electron when the app starts.
@@ -878,9 +885,20 @@ function StudyDeskApp() {
               </button>
             </form>
 
-            <p className="task-summary">
-              {completedCount} of {tasks.length} tasks completed
-            </p>
+            <div className="task-summary-row">
+              <p className="task-summary">
+                {completedCount} of {tasks.length} tasks completed
+              </p>
+              {completedCount > 0 && (
+                <button
+                  type="button"
+                  className="clear-completed-btn"
+                  onClick={clearCompletedTasks}
+                >
+                  Clear completed ({completedCount})
+                </button>
+              )}
+            </div>
           </section>
         </section>
       )}
