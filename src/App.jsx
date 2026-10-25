@@ -708,6 +708,68 @@ function StudyDeskApp() {
                   </span>
                 </div>
               </button>
+
+              {/* Calendar preview */}
+              <button
+                className="feature-row calendar-row"
+                onClick={() => openPage("Calendar")}
+              >
+                <div className="feature-copy">
+                  <p className="feature-number">04 / PLAN AHEAD</p>
+
+                  <h3>Give important dates a place.</h3>
+
+                  <p>
+                    Keep track of exams, assignment deadlines, and study plans
+                    in one calendar you can update whenever you need.
+                  </p>
+
+                  <span className="feature-link">
+                    Open your calendar →
+                  </span>
+                </div>
+
+                <div className="feature-visual calendar-visual">
+                  <div className="preview-header">
+                    <span>STUDY CALENDAR</span>
+                    <span>{getUpcomingEvents().length} upcoming</span>
+                  </div>
+
+                  <div className="calendar-preview-date">
+                    <span className="calendar-preview-day">
+                      {new Date().getDate()}
+                    </span>
+                    <div>
+                      <strong>{monthNames[new Date().getMonth()]}</strong>
+                      <span>{new Date().getFullYear()}</span>
+                    </div>
+                  </div>
+
+                  <div className="calendar-preview-event">
+                    {getUpcomingEvents().length > 0 ? (
+                      <>
+                        <span className="calendar-preview-dot" />
+                        <div>
+                          <strong>{getUpcomingEvents()[0].title}</strong>
+                          <span>
+                            {new Date(getUpcomingEvents()[0].date + "T00:00:00").toLocaleDateString("en-IN", {
+                              day: "numeric",
+                              month: "short",
+                            })}
+                            {getUpcomingEvents()[0].category
+                              ? ` · ${getUpcomingEvents()[0].category}`
+                              : ""}
+                          </span>
+                        </div>
+                      </>
+                    ) : (
+                      <span className="calendar-preview-empty">
+                        No upcoming events. Add an exam or deadline.
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </button>
             </div>
           </section>
 
