@@ -1,5 +1,5 @@
 
-const { app, BrowserWindow, ipcMain } = require("electron");
+const { app, BrowserWindow, ipcMain, Notification } = require("electron");
 const path = require("node:path");
 const fs = require("node:fs/promises");
 
@@ -173,6 +173,17 @@ function sendTimerUpdate() {
     timerState.isRunning = false;
     timerState.endAt = null;
     stopTimerInterval();
+
+    try {
+      if (Notification.isSupported()) {
+        new Notification({
+          title: "StudyDesk Focus Timer",
+          body: "Focus session complete! Time to take a break.",
+        }).show();
+      }
+    } catch (notifError) {
+      console.warn("Could not display notification:", notifError);
+    }
   }
 
   for (const win of BrowserWindow.getAllWindows()) {
